@@ -32,6 +32,15 @@
             android:name=".data.TemperatureProvider"
             android:authorities="activeng.pt.activenglab" />
 
+        <activity
+            android:name=".DetailActivity"
+            android:label="@string/title_activity_detail"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="activeng.pt.activenglab.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

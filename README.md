@@ -6,7 +6,7 @@ Measuring temperatures using high precision RTD.
 
 ### Icon
 
-New -> Image Asset -> Asset Type: Launcher Icons
+New → Image Asset → Asset Type: Launcher Icons
 
 ```
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +88,21 @@ New package (src/androidTest/java/activeng.pt.activenglab): activeng.pt.activeng
 #### Inspect Sqlite
 
 Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/databases/temperature.db
+
+### Activities and Layout
+
+```
+MainActivity
+    Fragment
+        ListView
+            TextView (to improve soon...) → Launch DetailActivity
+```
+
+```
+DetailActivity
+    Fragment
+        TextView (to improve soon...)
+```
 
 ##### Notes
 
