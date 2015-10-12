@@ -29,8 +29,8 @@
 
         <!-- mesmo importante aparecer aqui, senão o getContext().getContentResolver() não funciona -->
         <provider
-            android:authorities="activeng.pt.activenglab"
-            android:name=".data.TemperatureProvider" />
+            android:name=".data.TemperatureProvider"
+            android:authorities="activeng.pt.activenglab" />
 
     </application>
 
