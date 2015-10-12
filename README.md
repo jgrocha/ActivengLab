@@ -47,6 +47,48 @@ Class to load all tests:
  
 Testing Activities: See sample `ActivityInstrumentation`. Nice example.
 
+### Preferences (Done!)
+
+[Android app preferences](http://developer.android.com/guide/topics/ui/settings.html)
+
+* android:key="location_text"
+* android:key="temperature_unit"
+* android:key="sync_frequency"
+* android:key="remote_url"
+        
+Check preferences on emulator:
+ 
+Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/shared_prefs/activeng.pt.activenglab_preferences.xml
+
+```
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="sync_frequency">60</string>
+    <string name="temperature_unit">C</string>
+    <string name="remote_url">http://lab.activeng.pt</string>
+    <string name="location_text">Carnaxide, Portugal</string>
+</map>
+```
+### Data: Contract + DbHelper + Provider
+
+New package (src/mail/java/activeng.pt.activenglab): activeng.pt.activenglab.data
+
+ * TemperatureProvider.java
+ * TemperatureDbHelper.java
+ * TemperatureContract.java
+
+New package (src/androidTest/java/activeng.pt.activenglab): activeng.pt.activenglab.data
+
+* PollingCheck.java
+* TestDb.java
+* TestProvider.java
+* TestTemperatureContract.java
+* TestUtilities.java
+
+#### Inspect Sqlite
+
+Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/databases/temperature.db
+
 ##### Notes
 
 [Type Unicode character](http://askubuntu.com/questions/31258/how-can-i-type-a-unicode-character-for-example-em-dash)
