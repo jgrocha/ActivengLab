@@ -33,7 +33,7 @@ public class MainActivityFragment extends Fragment {
         String[] data = {
                 "Sensor 1 - Carnaxide, Portugal - 31/17",
                 "Sensor 2 - Carnaxide, Portugal - 21/8",
-                "Sensor 1 - Sofarimex - 22/17"
+                "Sensor 3 - Sofarimex - 22/13"
         };
         List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
 

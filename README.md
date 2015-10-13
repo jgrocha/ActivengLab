@@ -91,8 +91,23 @@ Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/d
 
 ### Activities and Layout
 
+Life cycle: DetailActivity must have `android:launchMode="singleTop"` on `AndroidManifest.xml`. See [launchMode=singleTop](http://stackoverflow.com/questions/12276027/how-can-i-return-to-a-parent-activity-correctly).
+
+```
+<activity
+            android:name=".DetailActivity"
+            android:label="@string/title_activity_detail"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop" >
+```            
+
+#### Hierarchy
+
 ```
 MainActivity
+    Action Bar
+        Settings
     Fragment
         ListView
             TextView (to improve soon...) → Launch DetailActivity
@@ -100,6 +115,8 @@ MainActivity
 
 ```
 DetailActivity
+    Action Bar
+        CalibrationActivity
     Fragment
         TextView (to improve soon...)
 ```

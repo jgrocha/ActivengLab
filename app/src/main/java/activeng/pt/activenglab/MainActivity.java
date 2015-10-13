@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("Life cyle", "MainActivity onCreate");
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -66,19 +68,55 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d("Life cyle", "--> MainActivity onSaveInstanceState");
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
 
-        public PlaceholderFragment() {
-        }
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore state members from saved instance
+        Log.d("Life cyle", "<-- MainActivity onRestoreInstanceState");
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onResume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onStop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onRestart");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();  // Always call the superclass
+        Log.d("Life cyle", "MainActivity onDestroy");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onStart");
     }
 }
