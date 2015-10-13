@@ -117,6 +117,9 @@ MainActivity
 DetailActivity
     Action Bar
         CalibrationActivity
+            GridLayout
+                (TextView|EditText)+
+                Calculate button, Save button
     Fragment
         TextView (to improve soon...)
 ```
