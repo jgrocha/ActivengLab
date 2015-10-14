@@ -3,6 +3,7 @@ package activeng.pt.activenglab;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -16,6 +17,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.util.Random;
+
 import activeng.pt.activenglab.data.TemperatureContract;
 
 /**
@@ -24,6 +31,11 @@ import activeng.pt.activenglab.data.TemperatureContract;
 public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private SensorCursorAdapter mySensorCursorAdapter;
+
+    private final Handler mHandler = new Handler();
+    private Runnable mTimer2;
+    private LineGraphSeries<DataPoint> mSeries2;
+    private double graph2LastXValue = 5d;
 
     public DetailActivityFragment() {
     }
@@ -36,6 +48,14 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_sensor);
         listView.setAdapter(mySensorCursorAdapter);
+
+        GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph);
+        mSeries2 = new LineGraphSeries<DataPoint>();
+        graph2.addSeries(mSeries2);
+        graph2.getViewport().setXAxisBoundsManual(true);
+        graph2.getViewport().setMinX(0);
+        graph2.getViewport().setMaxX(40);
+        
         return rootView;
     }
 
@@ -90,4 +110,45 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         // old cursor once we return.)
         mySensorCursorAdapter.swapCursor(data);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mTimer2 = new Runnable() {
+            @Override
+            public void run() {
+                graph2LastXValue += 1d;
+                mSeries2.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
+                mHandler.postDelayed(this, 1000);
+            }
+        };
+        mHandler.postDelayed(mTimer2, 1000);
+    }
+
+    @Override
+    public void onPause() {
+        mHandler.removeCallbacks(mTimer2);
+        super.onPause();
+    }
+
+    private DataPoint[] generateData() {
+        int count = 30;
+        DataPoint[] values = new DataPoint[count];
+        for (int i = 0; i < count; i++) {
+            double x = i;
+            double f = mRand.nextDouble() * 0.15 + 0.3;
+            double y = Math.sin(i * f + 2) + mRand.nextDouble() * 0.3;
+            DataPoint v = new DataPoint(x, y);
+            values[i] = v;
+        }
+        return values;
+    }
+
+    double mLastRandom = 2;
+    Random mRand = new Random();
+
+    private double getRandom() {
+        return mLastRandom += mRand.nextDouble() * 0.5 - 0.25;
+    }
+
 }

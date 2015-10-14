@@ -5,22 +5,31 @@
               android:orientation="vertical"
               tools:context="activeng.pt.activenglab.DetailActivityFragment">
 
+    <!--
     <TextView
         android:id="@+id/tvLabel_BeforeListView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Before ListView"/>
-    
+    -->
+
     <ListView
         android:id="@+id/listview_sensor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="match_parent"
+        android:layout_height="100dip"
+        android:id="@+id/graph" />
+
+    <!--
     <TextView
         android:id="@+id/tvLabel_AfterListView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="After ListView"/>
+    -->
 
 </LinearLayout>
 

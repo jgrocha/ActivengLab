@@ -110,7 +110,7 @@ MainActivity
         Settings
     Fragment
         ListView
-            TextView (to improve soon...) → Launch DetailActivity
+            Custom View (from ItemSensorCursorAdapter) → Launch DetailActivity(Uri)
 ```
 
 ```
@@ -121,8 +121,34 @@ DetailActivity
                 (TextView|EditText)+
                 Calculate button, Save button
     Fragment
-        TextView (to improve soon...)
+        ListView
+            Custom View (from SensorCursorAdapter - just one Sensor)
 ```
+### Charts and Graphs
+
+build.gradle (Module:app)
+
+```
+dependencies {
+    (...)
+    compile 'com.jjoe64:graphview:4.0.1'
+    (...)
+}
+```
+
+`fragment_detail.xml`
+
+```
+    <ListView
+        android:id="@+id/listview_sensor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="match_parent"
+        android:layout_height="100dip"
+        android:id="@+id/graph" />
+```        
 
 ##### Notes
 
