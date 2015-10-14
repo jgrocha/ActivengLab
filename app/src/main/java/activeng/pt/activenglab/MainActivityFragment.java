@@ -2,7 +2,6 @@ package activeng.pt.activenglab;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -21,7 +20,7 @@ import activeng.pt.activenglab.data.TemperatureContract;
  */
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private SensorCursorAdapter mySensorCursorAdapter;
+    private ItemSensorCursorAdapter myItemSensorCursorAdapter;
 
     public MainActivityFragment() {
     }
@@ -30,7 +29,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mySensorCursorAdapter = new SensorCursorAdapter(getActivity(), null, 0);
+        myItemSensorCursorAdapter = new ItemSensorCursorAdapter(getActivity(), null, 0);
 
         //Cursor cursor = getContext().getContentResolver().query(TemperatureContract.SensorEntry.CONTENT_URI, null, null, null, null);
         //int count = 0;
@@ -55,7 +54,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         //// Now that we have some dummy forecast data, create an ArrayAdapter.
         //// The ArrayAdapter will take data from a source (like our dummy forecast) and
         //// use it to populate the ListView it's attached to.
-        //mySensorCursorAdapter =
+        //myItemSensorCursorAdapter =
         //        new ArrayAdapter<String>(
         //                getActivity(), // The current context (this activity)
         //                R.layout.list_item_forecast, // The name of the layout ID.
@@ -66,11 +65,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        //listView.setAdapter(mySensorCursorAdapter);
+        //listView.setAdapter(myItemSensorCursorAdapter);
 
-        //SensorCursorAdapter todoAdapter = new SensorCursorAdapter(getContext(), cursor, 0);
+        //ItemSensorCursorAdapter todoAdapter = new ItemSensorCursorAdapter(getContext(), cursor, 0);
         // Attach cursor adapter to the ListView
-        listView.setAdapter(mySensorCursorAdapter);
+        listView.setAdapter(myItemSensorCursorAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -117,7 +116,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        mySensorCursorAdapter.swapCursor(null);
+        myItemSensorCursorAdapter.swapCursor(null);
     }
 
     // Called when a previously created loader has finished loading
@@ -125,7 +124,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        mySensorCursorAdapter.swapCursor(data);
+        myItemSensorCursorAdapter.swapCursor(data);
     }
 
 }

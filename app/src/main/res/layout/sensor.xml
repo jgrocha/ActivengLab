@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvSensor_ID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:text="999"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+    <TextView
+        android:id="@+id/tvSensor_Location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Carnaxide"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/tvSensor_SensorType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PT999"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/tvLabel_CurrentRead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current read"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etCurrentRead"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:textSize="24sp"
+        android:text="231.335"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
+
+    <TextView
+        android:id="@+id/tvLabel_Max"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Maximum value"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etMax"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:text="350.000"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
+
+    <TextView
+        android:id="@+id/tvLabel_Min"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lower value"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etMin"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:text="-1.000"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
+
+    <TextView
+        android:id="@+id/tvLabel_TemperatureRecordCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Records stored"/>
+
+    <TextView
+        android:id="@+id/tv_TemperatureRecordCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+</LinearLayout>
