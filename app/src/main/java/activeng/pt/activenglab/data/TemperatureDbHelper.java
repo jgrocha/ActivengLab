@@ -51,11 +51,11 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 TemperatureContract.SensorEntry._ID + " INTEGER PRIMARY KEY," +
                 TemperatureContract.SensorEntry.COLUMN_LOCATION + " TEXT NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_INSTALLDATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-                TemperatureContract.SensorEntry.COLUMN_SENSORTYPE + " REAL NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_METRIC + " REAL NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_CALIBRATED + " REAL NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_CAL_A + " REAL NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_CAL_B + " REAL NOT NULL " +
+                TemperatureContract.SensorEntry.COLUMN_SENSORTYPE + " TEXT NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_METRIC + " INTEGER DEFAULT 1 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_CALIBRATED + " INTEGER DEFAULT 0 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_CAL_A + " FLOAT DEFAULT 0 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_CAL_B + " FLOAT DEFAULT 1 NOT NULL " +
                 " );";
         /*
         CREATE TABLE temperature(

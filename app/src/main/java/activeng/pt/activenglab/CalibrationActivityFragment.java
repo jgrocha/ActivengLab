@@ -51,6 +51,11 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         // return inflater.inflate(R.layout.fragment_calibration, container, false);
     }
 
+    // et_Amount
+
+
+
+
     @Override
     public void onClick(View v) {
         View rootView = v.getRootView();

@@ -13,12 +13,16 @@ import android.widget.TextView;
  */
 public class DetailActivityFragment extends Fragment {
 
+    //private SensorCursorAdapter myDetailSensorCursorAdapter;
+
     public DetailActivityFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        //myDetailSensorCursorAdapter = new SensorCursorAdapter(getActivity(), null, 0);
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 

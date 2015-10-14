@@ -36,7 +36,7 @@ public class TestDb extends AndroidTestCase {
         sure that we always have a clean test.
      */
     public void setUp() {
-        deleteTheDatabase();
+        // deleteTheDatabase();
     }
     
     public void testCreateDb() throws Throwable {

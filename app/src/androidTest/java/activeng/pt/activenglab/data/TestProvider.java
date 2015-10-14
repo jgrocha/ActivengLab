@@ -133,7 +133,7 @@ public class TestProvider extends AndroidTestCase {
             functioning correctly.
          */
 
-    public void testSensorGetType() {
+    public void testSensorGetType1() {
         // content://com.example.android.sunshine.app/location/
         ContentResolver resolver = getContext().getContentResolver();
         String type = resolver.getType(SensorEntry.CONTENT_URI);
@@ -142,7 +142,17 @@ public class TestProvider extends AndroidTestCase {
         Log.d(LOG_TAG, "     SensorEntry.CONTENT_DIR_TYPE = " + SensorEntry.CONTENT_DIR_TYPE);
         assertEquals("Error: the SensorEntry CONTENT_URI should return SensorEntry.CONTENT_DIR_TYPE",
                 SensorEntry.CONTENT_DIR_TYPE, type);
+    }
 
+    public void testSensorGetType2() {
+        // content://com.example.android.sunshine.app/location/
+        ContentResolver resolver = getContext().getContentResolver();
+        String type = resolver.getType(TemperatureContract.SensorEntry.buildSensorUri(2));
+        // vnd.android.cursor.dir/com.example.android.sunshine.app/location
+        Log.d(LOG_TAG, " getType(SensorEntry.CONTENT_URI) = " + type);
+        Log.d(LOG_TAG, "     SensorEntry.CONTENT_DIR_TYPE = " + SensorEntry.CONTENT_DIR_TYPE);
+        assertEquals("Error: the SensorEntry CONTENT_URI should return SensorEntry.CONTENT_DIR_TYPE",
+                SensorEntry.CONTENT_DIR_TYPE, type);
     }
 
     public void testTemperatureGetType() {
