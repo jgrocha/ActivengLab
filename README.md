@@ -2,6 +2,16 @@
 
 Measuring temperatures using high precision RTD.
 
+## Glossary
+
+ActivengLab App: Mobile application
+
+Controller: Arduino cnnect to sensors or relay
+
+Sensor: PT 100, etc
+
+Relay: 
+
 ## Android development
 
 ### Icon
@@ -87,7 +97,21 @@ New package (src/androidTest/java/activeng.pt.activenglab): activeng.pt.activeng
 
 #### Inspect Sqlite
 
+Emulator:
+
 Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/databases/temperature.db
+
+Real device (not working):
+
+```
+/home/jgr/Android/Sdk/platform-tools/adb -d shell "run-as activeng.pt.activenglab ls /data/data/activeng.pt.activenglab/databases/"
+/home/jgr/Android/Sdk/platform-tools/adb pull /data/data/activeng.pt.activenglab/databases/temperature.db /home/jgr/AndroidStudioProjects/ActivengLab/
+/home/jgr/Android/Sdk/platform-tools/adb push /home/jgr/AndroidStudioProjects/ActivengLab/temperature.db /data/data/activeng.pt.activenglab/databases/
+ 
+/home/jgr/Android/Sdk/platform-tools/adb push /home/jgr/AndroidStudioProjects/ActivengLab/temperature.db /sdcard/temperature.db
+/home/jgr/Android/Sdk/platform-tools/adb -d shell "run-as activeng.pt.activenglab cat /sdcard/temperature.db > /data/data/activeng.pt.activenglab/databases/temperature.db"
+exit
+```
 
 ### Activities and Layout
 
@@ -107,19 +131,34 @@ Life cycle: DetailActivity must have `android:launchMode="singleTop"` on `Androi
 ```
 MainActivity
     Action Bar
+        Connect
         Settings
     Fragment
         ListView
             Custom View (from ItemSensorCursorAdapter) → Launch DetailActivity(Uri)
+                + Current read
+                + Set Point | Clear set point
+                    Log data/hora
+                + Program (sequence of set points)
+                    90º 35 minutos (critério de estabilidade) tempo x intervalo
+                    130º 35 minutos
+                    121º 35 minutos                    
 ```
 
 ```
 DetailActivity
     Action Bar
+        Record On | off
+            EditText (Read comment from user (optional))
+        Properties
+            Sensor name
+            Sensor type
+            Record Interval        
         CalibrationActivity
             GridLayout
                 (TextView|EditText)+
                 Calculate button, Save button
+                    Log data/hora
     Fragment
         ListView
             Custom View (from SensorCursorAdapter - just one Sensor)
@@ -149,6 +188,18 @@ dependencies {
         android:layout_height="100dip"
         android:id="@+id/graph" />
 ```        
+
+### Bluetooth
+
+Initial support:
+
+* BluetoothChatService + Broadcast + Listener in every Activity
+
+More on [broadcast](http://stackoverflow.com/questions/17082393/handlers-and-multiple-activities).
+
+### PID
+
+[Arduino PID library](http://playground.arduino.cc/Code/PIDLibrary)
 
 ##### Notes
 

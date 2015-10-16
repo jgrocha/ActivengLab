@@ -73,6 +73,19 @@
     <string name="title_activity_detail">DetailActivity</string>
     <string name="title_activity_calibration">CalibrationActivity</string>
 
+    <string name="secure_connect">Connect</string>
+    <string name="disconnect">Disonnect</string>
+
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+
+    <string name="bt_not_enabled_leaving">Bluetooth was not enabled.</string>
+
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

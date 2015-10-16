@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="activeng.pt.activenglab" >
 
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -43,6 +46,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="activeng.pt.activenglab.MainActivity" />
         </activity>
+
+        <!--
+        <receiver android:name=".DetailActivity$connectionUpdates">
+            <intent-filter>
+                <action android:name="activeng.pt.activenglab.temperature"/>
+            </intent-filter>
+        </receiver>
+        -->
+
         <activity
             android:name=".CalibrationActivity"
             android:label="@string/title_activity_calibration"
@@ -53,6 +65,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="activeng.pt.activenglab.DetailActivity" />
         </activity>
+
+        <activity
+            android:name=".DeviceListActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/select_device"
+            android:theme="@android:style/Theme.Holo.Dialog"/>
+
     </application>
 
 </manifest>

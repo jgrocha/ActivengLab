@@ -1,21 +1,30 @@
 package activeng.pt.activenglab;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -33,9 +42,13 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     private SensorCursorAdapter mySensorCursorAdapter;
 
     private final Handler mHandler = new Handler();
+
     private Runnable mTimer2;
     private LineGraphSeries<DataPoint> mSeries2;
     private double graph2LastXValue = 5d;
+
+    BroadcastReceiver connectionUpdates;
+    private EditText etCurrentRead;
 
     public DetailActivityFragment() {
     }
@@ -49,15 +62,49 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         ListView listView = (ListView) rootView.findViewById(R.id.listview_sensor);
         listView.setAdapter(mySensorCursorAdapter);
 
+        etCurrentRead = (EditText) rootView.findViewById(R.id.etLabel_BeforeListView);
+        if (etCurrentRead == null) {
+            Log.d("ActivEng", "DetailActivityFragment R.id.etLabel_BeforeListView failed!");
+        } else {
+            Log.d("ActivEng", "DetailActivityFragment R.id.etLabel_BeforeListView OK!");
+        }
+
+        connectionUpdates = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle extras = intent.getExtras();
+                Log.d("ActivEng", "DetailActivityFragment --> onReceive");
+                if (extras != null) {
+                    String temperatureStr = extras.getString(Intent.EXTRA_TEXT);
+                    Log.d("ActivEng", temperatureStr);
+                    //Log.d("ActivEng", etCurrentRead.getText().toString());
+                    etCurrentRead.setText(temperatureStr);
+                    Double t;
+                    try {
+                        t = Double.parseDouble(temperatureStr); // Make use of autoboxing.  It's also easier to read.
+                    } catch (NumberFormatException e) {
+                        t = 0.0d;
+                    }
+                    graph2LastXValue += 1d;
+                    mSeries2.appendData(new DataPoint(graph2LastXValue, t), true, 40);
+                }
+            }
+        };
+
         GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph);
         mSeries2 = new LineGraphSeries<DataPoint>();
         graph2.addSeries(mSeries2);
         graph2.getViewport().setXAxisBoundsManual(true);
         graph2.getViewport().setMinX(0);
         graph2.getViewport().setMaxX(40);
-        
+
         return rootView;
     }
+
+    //@Override
+    //public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    //    inflater.inflate(R.menu.bluetooth_chat, menu);
+    //}
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -91,7 +138,6 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         } else {
             return null;
         }
-
     }
 
     @Override
@@ -114,20 +160,25 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onResume() {
         super.onResume();
-        mTimer2 = new Runnable() {
-            @Override
-            public void run() {
-                graph2LastXValue += 1d;
-                mSeries2.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
-                mHandler.postDelayed(this, 1000);
-            }
-        };
-        mHandler.postDelayed(mTimer2, 1000);
+
+        Log.d("ActivEng", "DetailActivityFragment registerReceiver");
+        getActivity().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
+
+        //mTimer2 = new Runnable() {
+        //    @Override
+        //    public void run() {
+        //        graph2LastXValue += 1d;
+        //        mSeries2.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
+        //        mHandler.postDelayed(this, 1000);
+        //    }
+        //};
+        //mHandler.postDelayed(mTimer2, 1000);
     }
 
     @Override
     public void onPause() {
         mHandler.removeCallbacks(mTimer2);
+        getActivity().unregisterReceiver(this.connectionUpdates);
         super.onPause();
     }
 

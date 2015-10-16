@@ -5,13 +5,18 @@
               android:orientation="vertical"
               tools:context="activeng.pt.activenglab.DetailActivityFragment">
 
-    <!--
-    <TextView
-        android:id="@+id/tvLabel_BeforeListView"
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Before ListView"/>
-    -->
+        android:id="@+id/etLabel_BeforeListView"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:textSize="24sp"
+        android:text="231.335"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
 
     <ListView
         android:id="@+id/listview_sensor"
