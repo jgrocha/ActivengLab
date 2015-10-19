@@ -84,7 +84,18 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
                     //Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, sensorId + sensorType);
                     // uri = Uri.parse(stringUri);
-                    Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, TemperatureContract.SensorEntry.buildSensorUri(sensorId).toString());
+                    Intent intent = new Intent(getActivity(), DetailActivity.class);
+                    // The URI will be used to retrieve the data
+                    intent.putExtra(Intent.EXTRA_TEXT, TemperatureContract.SensorEntry.buildSensorUri(sensorId).toString());
+                    // But I'm sending the data also...
+                    intent.putExtra("_id", 1);
+                    intent.putExtra("location", "Fim do mundo");
+                    intent.putExtra("installdate", 1445279973);
+                    intent.putExtra("sensortype", "Avariado");
+                    intent.putExtra("metric", 1);
+                    intent.putExtra("calibrated", 1);
+                    intent.putExtra("cal_a", -0.997);
+                    intent.putExtra("cal_b", 1.12);
                     startActivity(intent);
                 }
             }

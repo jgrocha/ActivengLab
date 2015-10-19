@@ -20,8 +20,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,6 +36,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 import activeng.pt.activenglab.data.TemperatureContract;
@@ -47,6 +50,9 @@ import activeng.pt.activenglab.data.TemperatureContract;
 public class BluetoothChatService {
     // Debugging
     private static final String TAG = "BluetoothChatService";
+
+    // to make sure we only unregister the receiver if it was registered before
+    private boolean registered = false;
 
     // Name for the SDP record when creating server socket
     private static final String NAME_SECURE = "BluetoothChatSecure";
@@ -66,13 +72,15 @@ public class BluetoothChatService {
 
     // Member fields
     private final BluetoothAdapter mAdapter;
-    private final Handler mHandler;
+    // private final Handler mHandler;
     private AcceptThread mSecureAcceptThread;
     private AcceptThread mInsecureAcceptThread;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
     private int mState;
     private Context mContext;
+
+    private BroadcastReceiver connectionUpdates;
 
     // Constants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
@@ -84,13 +92,27 @@ public class BluetoothChatService {
      * Constructor. Prepares a new BluetoothChat session.
      *
      * @param context The UI Activity Context
-     * @param handler A Handler to send messages back to the UI Activity
      */
-    public BluetoothChatService(Context context, Handler handler) {
+    //public BluetoothChatService(Context context, Handler handler) {
+    public BluetoothChatService(Context context) {
         mContext = context;
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
-        mHandler = handler;
+        //mHandler = handler;
+
+        connectionUpdates = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle extras = intent.getExtras();
+                Log.d("ActivEng", "BluetoothChatService --> onReceive");
+                if (extras != null) {
+                    String temperatureStr = extras.getString(Intent.EXTRA_TEXT);
+                    Log.d("ActivEng", temperatureStr);
+                    write(temperatureStr + "\n");
+                }
+            }
+        };
+
     }
 
     /**
@@ -103,7 +125,10 @@ public class BluetoothChatService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        // mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+
+        Intent intent = new Intent(Constants.MESSAGE_BT_STATE_CHANGE).putExtra(Intent.EXTRA_TEXT, state);
+        mContext.sendBroadcast(intent);
     }
 
     /**
@@ -211,13 +236,22 @@ public class BluetoothChatService {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
+        /*
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.DEVICE_NAME, device.getName());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
+        */
+
+        Intent intent = new Intent(Constants.MESSAGE_BT_NAME).putExtra(Intent.EXTRA_TEXT, device.getName());
+        mContext.sendBroadcast(intent);
 
         setState(STATE_CONNECTED);
+
+        Log.d("ActivEng", "CalibrationActivityFragment registerReceiver onResume()");
+        mContext.getApplicationContext().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TO_ARDUINO));
+        registered = true;
     }
 
     /**
@@ -246,6 +280,13 @@ public class BluetoothChatService {
             mInsecureAcceptThread = null;
         }
         setState(STATE_NONE);
+
+        Log.d("ActivEng", "BluetoothChatService unregisterReceiver stop()");
+        if (registered) {
+            mContext.getApplicationContext().unregisterReceiver(this.connectionUpdates);
+            registered = false;
+        }
+
     }
 
     /**
@@ -254,7 +295,13 @@ public class BluetoothChatService {
      * @param out The bytes to write
      * @see ConnectedThread#write(byte[])
      */
-    public void write(byte[] out) {
+    public void write(String out) {
+        //Log.d("ActivEng", "----> Perform the write unsynchronized");
+        byte[] send = out.getBytes();
+        //for ( int j = 0; j < send.length; j++ ) {
+        //    int v = send[j];
+        //    Log.d("ActivEng", "send[" + j + "]=" + v);
+        //}
         // Create temporary object
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
@@ -263,19 +310,26 @@ public class BluetoothChatService {
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
-        r.write(out);
+        // Log.d("ActivEng", out);
+        r.write(send);
     }
 
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private void connectionFailed() {
+
+        /*
         // Send a failure message back to the Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Unable to connect device");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
+        */
+
+        Intent intent = new Intent(Constants.MESSAGE_BT_FAIL).putExtra(Intent.EXTRA_TEXT, "Unable to connect device");
+        mContext.sendBroadcast(intent);
 
         // Start the service over to restart listening mode
         BluetoothChatService.this.start();
@@ -285,12 +339,18 @@ public class BluetoothChatService {
      * Indicate that the connection was lost and notify the UI Activity.
      */
     private void connectionLost() {
+
+        /*
         // Send a failure message back to the Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Device connection was lost");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
+        */
+
+        Intent intent = new Intent(Constants.MESSAGE_BT_FAIL).putExtra(Intent.EXTRA_TEXT, "Device connection was lost");
+        mContext.sendBroadcast(intent);
 
         // Start the service over to restart listening mode
         BluetoothChatService.this.start();
@@ -484,7 +544,7 @@ public class BluetoothChatService {
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
             byte[] buffer = new byte[1024];
-            int bytes;
+            int bytes, pos;
             StringBuilder queue = new StringBuilder("");
             String temp;
             // Keep listening to the InputStream while connected
@@ -492,21 +552,20 @@ public class BluetoothChatService {
                 try {
                     bytes = mmInStream.read(buffer);
                     if (bytes > 0) {
-                        String decoded = new String(buffer, "ASCII"); // or UTF-8
-                        queue.append(decoded);
+                        String readMessage = new String(buffer, 0, bytes);
+                        queue.append(readMessage);
                         // Log.d("Temperatura", "read() #" + Integer.toString(bytes) + " -> " + queue.substring(0, 40));
-                        int pos = queue.indexOf("\n");
-                        if (pos >= 0) {
+                        pos = queue.indexOf("\n");
+                        while (pos >= 0) {
                             // Log.d("Temperatura", "indexOf() #" + pos);
                             temp = queue.substring(0, pos - 1);
                             queue.delete(0, pos + 1);
                             // Log.d("Temperatura", "limpa() #" + " -> " + temp);
-                            mHandler.obtainMessage(Constants.MESSAGE_READ, 0, 0, temp).sendToTarget();
-
-                            Log.d("ActivEng", "sendBroadcast");
-
+                            // mHandler.obtainMessage(Constants.MESSAGE_READ, 0, 0, temp).sendToTarget();
+                            Log.d("ActivEng", "sendBroadcast " + temp);
                             Intent intent = new Intent(Constants.MESSAGE_TEMPERATURE).putExtra(Intent.EXTRA_TEXT, temp);
                             mContext.sendBroadcast(intent);
+                            pos = queue.indexOf("\n");
                         }
                     }
                 } catch (IOException e) {
@@ -526,11 +585,12 @@ public class BluetoothChatService {
          */
         public void write(byte[] buffer) {
             try {
-                mmOutStream.write(buffer);
-
+                // mmOutStream.write(buffer);
+                mmOutStream.write(buffer, 0, buffer.length);
+                mmOutStream.flush();
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
-                        .sendToTarget();
+                // mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
+                Log.d("ActivEng", "----> WRITE " + buffer.length + " Done!");
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
             }

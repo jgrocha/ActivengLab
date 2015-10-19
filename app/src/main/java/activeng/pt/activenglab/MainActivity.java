@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     private BluetoothChatService mChatService = null;
     private String mConnectedDeviceName = null;
+
+    private Switch switcha = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,25 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.myswitch);
+        View view = MenuItemCompat.getActionView(menuItem);
+        switcha = (Switch) view.findViewById(R.id.switchForActionBar);
+        switcha.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Intent serverIntent = new Intent(getApplicationContext(), DeviceListActivity.class);
+                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+                } else {
+                    if (mChatService != null) {
+                        mChatService.stop();
+                    }
+                }
+                Log.d("Life cyle", "New Switch");
+            }
+        });
         return true;
     }
 
@@ -94,6 +118,13 @@ public class MainActivity extends AppCompatActivity {
                 //toast.show();
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
+
+            case R.id.myswitch:
+                Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
+                toast.show();
+                Log.d("Life cyle", "Switch");
+                return true;
+            /*
             case R.id.secure_connect_scan:
                 //Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
                 //toast.show();
@@ -109,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                     mChatService.stop();
                 }
                 return true;
+            */
         }
         return super.onOptionsItemSelected(item);
     }
@@ -230,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
                     //    Toast.makeText(activity, msg.getData().getString(Constants.TOAST),
                     //            Toast.LENGTH_SHORT).show();
                     //}
-                    Log.d("ActivEng", "Constants.MESSAGE_TOAST " + msg.getData().getString(Constants.TOAST) );
+                    Log.d("ActivEng", "Constants.MESSAGE_TOAST " + msg.getData().getString(Constants.TOAST));
                     break;
             }
         }
@@ -261,7 +293,8 @@ public class MainActivity extends AppCompatActivity {
         //});
 
         // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothChatService(this, mHandler);
+        //mChatService = new BluetoothChatService(this, mHandler);
+        mChatService = new BluetoothChatService(this);
 
         // Initialize the buffer for outgoing messages
         //mOutStringBuffer = new StringBuffer("");
@@ -273,6 +306,12 @@ public class MainActivity extends AppCompatActivity {
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     connectDevice(data, true);
+                }
+                if (resultCode == Activity.RESULT_CANCELED) {
+                    // TODO
+                    // voltar a por o switch button a off
+                    switcha.setChecked(false);
+                    Log.d("ActivEng", "resultCode" + resultCode);
                 }
                 break;
             case REQUEST_CONNECT_DEVICE_INSECURE:
@@ -289,8 +328,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     // User did not enable Bluetooth or an error occurred
                     Log.d("ActivEng", "BT not enabled");
-                    Toast.makeText(this, R.string.bt_not_enabled_leaving,
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
                     this.finish();
                 }
         }

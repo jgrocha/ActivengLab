@@ -79,6 +79,14 @@ public class DetailActivity extends AppCompatActivity {
 
             Intent intent = new Intent(this, CalibrationActivity.class);
             intent.putExtra(Intent.EXTRA_TEXT, mySensor);
+            intent.putExtra("_id", (long)1);
+            intent.putExtra("location", "Fim do mundo");
+            intent.putExtra("installdate", (long)1445279973);
+            intent.putExtra("sensortype", "Avariado");
+            intent.putExtra("metric", (int)1);
+            intent.putExtra("calibrated", (int)1);
+            intent.putExtra("cal_a", (double)-0.997);
+            intent.putExtra("cal_b", (double)1.12);
             startActivity(intent);
 
             return true;

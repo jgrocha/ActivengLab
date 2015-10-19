@@ -197,6 +197,52 @@ Initial support:
 
 More on [broadcast](http://stackoverflow.com/questions/17082393/handlers-and-multiple-activities).
 
+### Convertions: String versus Double
+
+Arduino: doubles are always returned with '.' as decimal separator.
+
+Incoming doubles are converted with: 
+
+```
+t = Double.parseDouble(parts[2]);
+cal_a = Double.parseDouble(calIntent.getStringExtra("cal_a"));
+```
+
+To format doubles as string, we can not use the local locale (to avoid ',' as separator).
+
+We use:
+
+```
+    private final NumberFormat f = NumberFormat.getInstance();
+    
+        if (f instanceof DecimalFormat) {
+            //((DecimalFormat)f).setDecimalSeparatorAlwaysShown(true);
+            f.setMaximumFractionDigits(2);
+            f.setMinimumFractionDigits(2);
+            DecimalFormatSymbols custom = new DecimalFormatSymbols();
+            custom.setDecimalSeparator('.');
+            ((DecimalFormat)f).setDecimalFormatSymbols(custom);
+        }
+```
+
+and then: 
+
+```
+//etCurrentRead.setText( String.format( "%.3f", t ));
+etCurrentRead.setText( f.format(t) );
+```
+
+Instead of:
+
+```
+String.format( "%.3f", t )
+or
+NumberFormat nf = NumberFormat.getInstance();
+nf.setMinimumFractionDigits(2);
+nf.setMaximumFractionDigits(2);
+String output = nf.format(val);
+```
+
 ### PID
 
 [Arduino PID library](http://playground.arduino.cc/Code/PIDLibrary)

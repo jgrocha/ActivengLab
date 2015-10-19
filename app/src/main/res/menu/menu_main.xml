@@ -3,6 +3,7 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
 
+    <!--
     <item
         android:id="@+id/secure_connect_scan"
         android:orderInCategory="50"
@@ -14,10 +15,18 @@
         android:orderInCategory="50"
         android:title="@string/disconnect"
         app:showAsAction="ifRoom"/>
+    -->
+
+    <item
+        android:id="@+id/myswitch"
+        android:title=""
+        app:showAsAction="always"
+        app:actionLayout="@layout/switch_layout"/>
 
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never"/>
+
 </menu>

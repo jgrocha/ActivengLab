@@ -30,6 +30,9 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.Random;
 
 import activeng.pt.activenglab.data.TemperatureContract;
@@ -50,6 +53,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     BroadcastReceiver connectionUpdates;
     private EditText etCurrentRead;
 
+    private final NumberFormat f = NumberFormat.getInstance();
+
     public DetailActivityFragment() {
     }
 
@@ -69,24 +74,48 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             Log.d("ActivEng", "DetailActivityFragment R.id.etLabel_BeforeListView OK!");
         }
 
+        if (f instanceof DecimalFormat) {
+            //((DecimalFormat)f).setDecimalSeparatorAlwaysShown(true);
+            f.setMaximumFractionDigits(2);
+            f.setMinimumFractionDigits(2);
+            DecimalFormatSymbols custom = new DecimalFormatSymbols();
+            custom.setDecimalSeparator('.');
+            ((DecimalFormat)f).setDecimalFormatSymbols(custom);
+        }
+
         connectionUpdates = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                String messageType;
+                int sensor;
+                Double t;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "DetailActivityFragment --> onReceive");
                 if (extras != null) {
-                    String temperatureStr = extras.getString(Intent.EXTRA_TEXT);
-                    Log.d("ActivEng", temperatureStr);
-                    //Log.d("ActivEng", etCurrentRead.getText().toString());
-                    etCurrentRead.setText(temperatureStr);
-                    Double t;
-                    try {
-                        t = Double.parseDouble(temperatureStr); // Make use of autoboxing.  It's also easier to read.
-                    } catch (NumberFormatException e) {
-                        t = 0.0d;
+                    String message = extras.getString(Intent.EXTRA_TEXT);
+                    // TODO
+                    // passar isto para uma função em Utils, para ser comum nas várias atividades
+                    // R|1|26.430|4423
+                    String[] parts = message.split("\\|", -1); // with -1 empty fields are included
+                    //parts[0] = "R";
+                    //parts[1] = "1";
+                    //parts[2] = "26.430";
+                    //parts[3] = "1445279973";
+                    sensor = Integer.parseInt(parts[1]);
+                    Log.d("ActivEng", message);
+                    if ((message.charAt(0) == 'R') && (parts.length) >= 4 && (sensor == 1)) {
+                        //Log.d("ActivEng", etCurrentRead.getText().toString());
+                        // In this casa, why we convert text to double and then double to text?
+                        // Because we want to show the number os decimal places according to user preferences :-)
+                        try {
+                            t = Double.parseDouble(parts[2]); // Make use of autoboxing.  It's also easier to read.
+                        } catch (NumberFormatException e) {
+                            t = 0.0d;
+                        }
+                        //etCurrentRead.setText( String.format( "%.3f", t ));
+                        etCurrentRead.setText( f.format(t) );
+                        mSeries2.appendData(new DataPoint(graph2LastXValue, t), true, 40);
                     }
-                    graph2LastXValue += 1d;
-                    mSeries2.appendData(new DataPoint(graph2LastXValue, t), true, 40);
                 }
             }
         };
@@ -108,7 +137,6 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-
         Bundle args = new Bundle();
         Uri uri;
         Intent intent = getActivity().getIntent();
@@ -154,6 +182,15 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
+        //Cursor aux;
+        long sensorId = 0;
+        String sensorType = null;
+        Log.d("ActivEng", "DetailActivityFragment onLoadFinished. getCount() = " + data.getCount() + " getColumnCount() = " + data.getColumnCount());
+        if (data.moveToFirst()){
+            sensorId = data.getLong(data.getColumnIndex(TemperatureContract.SensorEntry._ID));
+            sensorType = data.getString(data.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
+        }
+        Log.d("ActivEng", "DetailActivityFragment onLoadFinished. sensorID = " + sensorId + " getColumnCount() = " + sensorType);
         mySensorCursorAdapter.swapCursor(data);
     }
 
