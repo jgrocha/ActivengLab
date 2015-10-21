@@ -80,22 +80,23 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     long sensorId = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
-                    String sensorType = cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
+                    //String sensorType = cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
 
                     //Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, sensorId + sensorType);
                     // uri = Uri.parse(stringUri);
                     Intent intent = new Intent(getActivity(), DetailActivity.class);
                     // The URI will be used to retrieve the data
+                    // TODO
                     intent.putExtra(Intent.EXTRA_TEXT, TemperatureContract.SensorEntry.buildSensorUri(sensorId).toString());
                     // But I'm sending the data also...
-                    intent.putExtra("_id", 1);
-                    intent.putExtra("location", "Fim do mundo");
-                    intent.putExtra("installdate", 1445279973);
-                    intent.putExtra("sensortype", "Avariado");
-                    intent.putExtra("metric", 1);
-                    intent.putExtra("calibrated", 1);
-                    intent.putExtra("cal_a", -0.997);
-                    intent.putExtra("cal_b", 1.12);
+                    intent.putExtra(TemperatureContract.SensorEntry._ID, sensorId);
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_LOCATION, cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_LOCATION)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_METRIC, cursor.getInt(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_METRIC)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, cursor.getInt(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_CALIBRATED)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CAL_A, cursor.getDouble(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_CAL_A)));
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CAL_B, cursor.getDouble(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_CAL_B)));
                     startActivity(intent);
                 }
             }

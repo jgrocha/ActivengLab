@@ -105,9 +105,9 @@ public class TestInsertData extends AndroidTestCase {
 
         Uri mNewUri;
         ContentValues novosValues = new ContentValues();
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, "Beijing");
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, "2015-10-09 15:47:00");
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, "PT-100");
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, "Seoul");
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, "2015-10-21 15:47:00");
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, "PT-100 3w");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_METRIC, 1);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, 0);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, 0);

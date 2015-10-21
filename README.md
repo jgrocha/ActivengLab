@@ -6,7 +6,7 @@ Measuring temperatures using high precision RTD.
 
 ActivengLab App: Mobile application
 
-Controller: Arduino cnnect to sensors or relay
+Controller: Arduino connected to sensors or relay
 
 Sensor: PT 100, etc
 
@@ -196,6 +196,11 @@ Initial support:
 * BluetoothChatService + Broadcast + Listener in every Activity
 
 More on [broadcast](http://stackoverflow.com/questions/17082393/handlers-and-multiple-activities).
+
+### Updates e refresh do CursorAdaptor
+
+// TODO
+http://www.androprogrammer.com/2013/10/database-demo-database-operations-with_13.html
 
 ### Convertions: String versus Double
 

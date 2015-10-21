@@ -1,6 +1,7 @@
 package activeng.pt.activenglab;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,6 +22,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 
+import activeng.pt.activenglab.data.TemperatureContract;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -30,10 +33,9 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     private EditText cal_current_read;
     private EditText cal_new_read;
 
-    private final NumberFormat f = NumberFormat.getInstance();
-
     private long sensorId = 0;
-    private double cal_a, cal_b;
+    //private double cal_a, cal_b;
+    private ContentValues currentSensor = null;
 
     public CalibrationActivityFragment() {
     }
@@ -41,6 +43,7 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         String sensorStr;
         View rootView = inflater.inflate(R.layout.fragment_calibration, container, false);
 
@@ -49,17 +52,11 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         Button btnSave = (Button) rootView.findViewById(R.id.cal_button_save);
         btnSave.setOnClickListener(this);
 
-        if (f instanceof DecimalFormat) {
-            //((DecimalFormat)f).setDecimalSeparatorAlwaysShown(true);
-            f.setMaximumFractionDigits(6);
-            f.setMinimumFractionDigits(6);
-            DecimalFormatSymbols custom = new DecimalFormatSymbols();
-            custom.setDecimalSeparator('.');
-            ((DecimalFormat)f).setDecimalFormatSymbols(custom);
-        }
-
         cal_current_read = (EditText) rootView.findViewById(R.id.cal_current_read);
         cal_new_read = (EditText) rootView.findViewById(R.id.cal_new_read);
+
+        EditText cal_current_offset = (EditText) rootView.findViewById(R.id.cal_current_offset);
+        EditText cal_current_gain = (EditText) rootView.findViewById(R.id.cal_current_gain);
 
         connectionUpdates = new BroadcastReceiver() {
             @Override
@@ -67,54 +64,67 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "CalibrationActivityFragment --> onReceive");
                 if (extras != null) {
-                    String temperatureStr = extras.getString(Intent.EXTRA_TEXT);
-                    Log.d("ActivEng", temperatureStr);
-                    //Log.d("ActivEng", etCurrentRead.getText().toString());
-                    cal_current_read.setText(temperatureStr);
-                    cal_new_read.setText(temperatureStr);
+                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
+                    if (temp != null) {
+                        cal_current_read.setText(temp.getString());
+                        cal_new_read.setText(temp.getString());
+                    }
                 }
             }
         };
 
         Intent calIntent = getActivity().getIntent();
         if (calIntent != null) {
-            if (calIntent.hasExtra("_id")) {
+            if (calIntent.hasExtra(TemperatureContract.SensorEntry.TABLE_NAME)) {
                 //sensorId = Long.parseLong(calIntent.getStringExtra("_id"), 10);
-                sensorId = calIntent.getLongExtra("_id", 0);
-            }
-            if (calIntent.hasExtra("cal_a")) {
-                //cal_a = Double.parseDouble(calIntent.getStringExtra("cal_a"));
-                cal_a = calIntent.getDoubleExtra("cal_a", 0.0);
-                ((TextView) rootView.findViewById(R.id.cal_current_offset)).setText(f.format(cal_a));
-            }
-            if (calIntent.hasExtra("cal_b")) {
-                //cal_b = Double.parseDouble(calIntent.getStringExtra("cal_b"));
-                cal_b = calIntent.getDoubleExtra("cal_b", 1.0);
-                ((TextView) rootView.findViewById(R.id.cal_current_gain)).setText(f.format(cal_b));
+                currentSensor = (ContentValues) calIntent.getParcelableExtra(TemperatureContract.SensorEntry.TABLE_NAME);
+                sensorId = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
+                getActivity().setTitle("Now calibrating " + sensorId);
+                double cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
+                double cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
+                cal_current_offset.setText(UtilitySingleton.getInstance().formatTemperature(cal_a, 6));
+                cal_current_gain.setText(UtilitySingleton.getInstance().formatTemperature(cal_b, 6));
             }
         }
 
         // http://stackoverflow.com/questions/33090978/change-listview-via-custom-simplecursoradapter
-
         return rootView;
-
         // return inflater.inflate(R.layout.fragment_calibration, container, false);
     }
 
-    // et_Amount
+    private void computeCalibration(View rootView) {
+        EditText et_cal_read_high = (EditText) rootView.findViewById(R.id.cal_read_high);
+        EditText et_cal_ref_high = (EditText) rootView.findViewById(R.id.cal_ref_high);
+        EditText et_cal_read_low = (EditText) rootView.findViewById(R.id.cal_read_low);
+        EditText et_cal_ref_low = (EditText) rootView.findViewById(R.id.cal_ref_low);
+
+        double cal_read_high;
+        double cal_ref_high;
+        double cal_read_low;
+        double cal_ref_low;
+
+        try {
+            cal_read_high = Double.parseDouble(et_cal_read_high.getText().toString());
+            cal_ref_high = Double.parseDouble(et_cal_ref_high.getText().toString());
+            cal_read_low = Double.parseDouble(et_cal_read_low.getText().toString());
+            cal_ref_low = Double.parseDouble(et_cal_ref_low.getText().toString());
+
+            ((EditText) rootView.findViewById(R.id.cal_new_offset)).setText(String.valueOf(cal_read_high * 2));
+
+        } catch (NumberFormatException e) {
+
+        }
+    }
 
     @Override
     public void onClick(View v) {
         View rootView = v.getRootView();
-        switch(v.getId()){
-            case R.id.cal_button_calculate :
+        switch (v.getId()) {
+            case R.id.cal_button_calculate:
                 Log.d("Life cyle", "calculate()");
-                EditText cal_read_high_text = (EditText) rootView.findViewById(R.id.cal_read_high);
-                double cal_read_high = Double.parseDouble(cal_read_high_text.getText().toString());
-                ((EditText) rootView.findViewById(R.id.cal_new_offset)).setText(String.valueOf(cal_read_high * 2));
-                Log.d("Life cyle", "calculate()" + String.valueOf(cal_read_high) );
+                computeCalibration(rootView);
                 break;
-            case R.id.cal_button_save :
+            case R.id.cal_button_save:
                 Log.d("Life cyle", "save()");
                 Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, "T1445177600");
                 getActivity().sendBroadcast(intent);

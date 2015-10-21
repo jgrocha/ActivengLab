@@ -1,10 +1,12 @@
 package activeng.pt.activenglab;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,6 +45,9 @@ import activeng.pt.activenglab.data.TemperatureContract;
  */
 public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private long sensorId = 0;
+    private ContentValues currentSensor = null;
+
     private SensorCursorAdapter mySensorCursorAdapter;
 
     private final Handler mHandler = new Handler();
@@ -58,6 +64,11 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     public DetailActivityFragment() {
     }
 
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -66,6 +77,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_sensor);
         listView.setAdapter(mySensorCursorAdapter);
+
+        //setHasOptionsMenu(true);
 
         etCurrentRead = (EditText) rootView.findViewById(R.id.etLabel_BeforeListView);
         if (etCurrentRead == null) {
@@ -83,39 +96,25 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             ((DecimalFormat)f).setDecimalFormatSymbols(custom);
         }
 
+        UtilitySingleton.getInstance().init(getActivity().getApplicationContext());
+        //assert(getActivity().getApplicationContext() == UtilitySingleton.get());
+
         connectionUpdates = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String messageType;
-                int sensor;
-                Double t;
+                long sensor;
+                double t;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "DetailActivityFragment --> onReceive");
                 if (extras != null) {
-                    String message = extras.getString(Intent.EXTRA_TEXT);
-                    // TODO
-                    // passar isto para uma função em Utils, para ser comum nas várias atividades
-                    // R|1|26.430|4423
-                    String[] parts = message.split("\\|", -1); // with -1 empty fields are included
-                    //parts[0] = "R";
-                    //parts[1] = "1";
-                    //parts[2] = "26.430";
-                    //parts[3] = "1445279973";
-                    sensor = Integer.parseInt(parts[1]);
-                    Log.d("ActivEng", message);
-                    if ((message.charAt(0) == 'R') && (parts.length) >= 4 && (sensor == 1)) {
-                        //Log.d("ActivEng", etCurrentRead.getText().toString());
-                        // In this casa, why we convert text to double and then double to text?
-                        // Because we want to show the number os decimal places according to user preferences :-)
-                        try {
-                            t = Double.parseDouble(parts[2]); // Make use of autoboxing.  It's also easier to read.
-                        } catch (NumberFormatException e) {
-                            t = 0.0d;
-                        }
-                        //etCurrentRead.setText( String.format( "%.3f", t ));
-                        etCurrentRead.setText( f.format(t) );
-                        mSeries2.appendData(new DataPoint(graph2LastXValue, t), true, 40);
+
+                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
+                    if (temp != null) {
+                        etCurrentRead.setText( temp.getString() );
+                        mSeries2.appendData(new DataPoint(graph2LastXValue, temp.getValue()), true, 40);
                     }
+
                 }
             }
         };
@@ -130,22 +129,23 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         return rootView;
     }
 
-    //@Override
-    //public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    //    inflater.inflate(R.menu.bluetooth_chat, menu);
-    //}
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Bundle args = new Bundle();
         Uri uri;
         Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-            uri = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
+        if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry._ID)) {
+            sensorId = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
+            uri = TemperatureContract.SensorEntry.buildSensorUri(sensorId);
             Log.d("SensorCursorAdapter", uri.toString());
             args.putParcelable("URI", uri);
+            getLoaderManager().initLoader(0, args, this);
         }
-        getLoaderManager().initLoader(0, args, this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -183,14 +183,14 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         //Cursor aux;
-        long sensorId = 0;
-        String sensorType = null;
         Log.d("ActivEng", "DetailActivityFragment onLoadFinished. getCount() = " + data.getCount() + " getColumnCount() = " + data.getColumnCount());
         if (data.moveToFirst()){
-            sensorId = data.getLong(data.getColumnIndex(TemperatureContract.SensorEntry._ID));
-            sensorType = data.getString(data.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
+            if (currentSensor == null) {
+                currentSensor = new ContentValues();
+                DatabaseUtils.cursorRowToContentValues(data, currentSensor);
+            }
         }
-        Log.d("ActivEng", "DetailActivityFragment onLoadFinished. sensorID = " + sensorId + " getColumnCount() = " + sensorType);
+        //Log.d("ActivEng", "DetailActivityFragment onLoadFinished. sensorID = " + mysensorid + " getColumnCount() = " + sensorType);
         mySensorCursorAdapter.swapCursor(data);
     }
 
@@ -237,6 +237,25 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     private double getRandom() {
         return mLastRandom += mRand.nextDouble() * 0.5 - 0.25;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            //case R.id.activity_menu_item:
+            //    // Not implemented here
+            //    return false;
+            case R.id.detail_action_settings:
+                // Do Fragment menu item stuff here
+                Intent intent = new Intent(getActivity(), CalibrationActivity.class);
+                intent.putExtra(TemperatureContract.SensorEntry.TABLE_NAME, currentSensor);
+                startActivity(intent);
+                return true;
+            default:
+                break;
+        }
+        return false;
     }
 
 }

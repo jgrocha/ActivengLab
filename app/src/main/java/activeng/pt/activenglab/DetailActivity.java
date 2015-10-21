@@ -19,10 +19,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import activeng.pt.activenglab.data.TemperatureContract;
+
 public class DetailActivity extends AppCompatActivity {
 
     static final String STATE_SENSOR = "Sensor";
-    public String mySensor = "";
+    private long sensorId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,26 +35,15 @@ public class DetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
-        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //fab.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View view) {
-        //        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-        //                .setAction("Action", null).show();
-        //    }
-        //});
-
         if (savedInstanceState == null) {
             Log.d("Life cyle", "DetailActivity onCreate: savedInstanceState == null");
             Intent intent = getIntent();
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                mySensor = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry._ID)) {
+                sensorId = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
             }
-        } else {
-            Log.d("Life cyle", "DetailActivity onCreate: savedInstanceState != null");
-            mySensor = savedInstanceState.getString(STATE_SENSOR);
         }
-        setTitle(mySensor);
+
+        setTitle("Sensor " + sensorId);
 
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -74,43 +65,11 @@ public class DetailActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.detail_action_settings) {
-            //Toast toast = Toast.makeText(getApplicationContext(), "Let's calibrate this sensor", Toast.LENGTH_SHORT);
-            //toast.show();
-
-            Intent intent = new Intent(this, CalibrationActivity.class);
-            intent.putExtra(Intent.EXTRA_TEXT, mySensor);
-            intent.putExtra("_id", (long)1);
-            intent.putExtra("location", "Fim do mundo");
-            intent.putExtra("installdate", (long)1445279973);
-            intent.putExtra("sensortype", "Avariado");
-            intent.putExtra("metric", (int)1);
-            intent.putExtra("calibrated", (int)1);
-            intent.putExtra("cal_a", (double)-0.997);
-            intent.putExtra("cal_b", (double)1.12);
-            startActivity(intent);
-
-            return true;
+            // Not implemented here
+            return false;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    // http://stackoverflow.com/questions/151777/saving-activity-state-on-android
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putString(STATE_SENSOR, mySensor);
-        Log.d("Life cyle", "--> DetailActivity onSaveInstanceState. mySensor = " + mySensor);
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Always call the superclass so it can restore the view hierarchy
-        super.onRestoreInstanceState(savedInstanceState);
-        // Restore state members from saved instance
-        mySensor = savedInstanceState.getString(STATE_SENSOR);
-        Log.d("Life cyle", "<-- DetailActivity onRestoreInstanceState");
     }
 
     @Override
