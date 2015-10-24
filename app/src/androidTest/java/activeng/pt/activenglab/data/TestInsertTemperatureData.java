@@ -15,12 +15,9 @@
  */
 package activeng.pt.activenglab.data;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.provider.UserDictionary;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
@@ -28,9 +25,9 @@ import activeng.pt.activenglab.data.TemperatureContract.CalibrationEntry;
 import activeng.pt.activenglab.data.TemperatureContract.SensorEntry;
 import activeng.pt.activenglab.data.TemperatureContract.TemperatureEntry;
 
-public class TestInsertData extends AndroidTestCase {
+public class TestInsertTemperatureData extends AndroidTestCase {
 
-    public static final String LOG_TAG = TestInsertData.class.getSimpleName();
+    public static final String LOG_TAG = TestInsertTemperatureData.class.getSimpleName();
 
     public void deleteAllRecordsFromProvider() {
 
@@ -98,31 +95,29 @@ public class TestInsertData extends AndroidTestCase {
         //deleteAllRecords();
     }
 
-    public void testInsertSensor() {
+    public void testInsertTemperature() {
         // insert our test records into the database
         //TemperatureDbHelper dbHelper = new TemperatureDbHelper(mContext);
         //SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         Uri mNewUri;
         ContentValues novosValues = new ContentValues();
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, "Seoul");
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, "2015-10-21 15:47:00");
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, "PT-100 3w");
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_METRIC, 1);
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, 0);
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, 0);
-        novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, 1);
+        novosValues.put(TemperatureEntry.COLUMN_SENSORID, 1);
+        novosValues.put(TemperatureEntry.COLUMN_CREATED, "2015-10-21 15:47:00");
+        novosValues.put(TemperatureEntry.COLUMN_VALUE, 12.34d);
+        novosValues.put(TemperatureEntry.COLUMN_METRIC, 1);
+        novosValues.put(TemperatureEntry.COLUMN_CALIBRATED, 0);
 
         mNewUri = mContext.getContentResolver().insert(
-                SensorEntry.CONTENT_URI,   // the user dictionary content URI
+                TemperatureEntry.CONTENT_URI,   // the user dictionary content URI
                 novosValues                          // the values to insert
         );
 
         //db.close();
 
         // Test the basic content provider query
-        Cursor sensorCursor = mContext.getContentResolver().query(
-                SensorEntry.CONTENT_URI,
+        Cursor temperatureCursor = mContext.getContentResolver().query(
+                TemperatureEntry.CONTENT_URI,
                 null,
                 null,
                 null,
@@ -130,6 +125,6 @@ public class TestInsertData extends AndroidTestCase {
         );
 
         // Make sure we get the correct cursor out of the database
-        TestUtilities.validateCursor("testInsertSensor", sensorCursor, novosValues);
+        TestUtilities.validateCursor("testInsertTemperature", temperatureCursor, novosValues);
     }
 }

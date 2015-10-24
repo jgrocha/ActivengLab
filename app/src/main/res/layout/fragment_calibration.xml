@@ -225,7 +225,7 @@
             android:layout_row="7"
             android:layout_column="2"
             android:ems="4"
-            android:text="27.3"
+            android:text=""
             android:layout_gravity="center_horizontal"
             android:clickable="false"
             android:cursorVisible="false"

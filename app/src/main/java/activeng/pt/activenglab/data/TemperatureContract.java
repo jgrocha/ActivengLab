@@ -41,6 +41,10 @@ public class TemperatureContract {
         public static final String COLUMN_CALIBRATED = "calibrated";
         public static final String COLUMN_CAL_A = "cal_a";
         public static final String COLUMN_CAL_B = "cal_b";
+        // read_interval 1, 2, 5, 10, 20, 30, 60
+        public static final String COLUMN_READ_INTERVAL = "read_interval";
+        // each cycle, each 2 cycles, each 5 cycles, each 10 cycles, 20, 30, 60
+        public static final String COLUMN_RECORD_SAMPLE = "record_sample";
 
         // Contract URIs
         public static final Uri CONTENT_URI =
@@ -48,7 +52,7 @@ public class TemperatureContract {
 
         public static final String CONTENT_DIR_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SENSOR;
-        
+
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SENSOR;
 

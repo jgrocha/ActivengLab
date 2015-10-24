@@ -33,6 +33,8 @@ public interface Constants {
     public static final String TOAST = "toast";
 
     public static final String MESSAGE_TEMPERATURE = "activeng.pt.activenglab.temperature";
+    public static final String MESSAGE_METADATA = "activeng.pt.activenglab.metadata";
+    public static final String MESSAGE_SENSORMETADATA = "activeng.pt.activenglab.metadata";
     public static final String MESSAGE_TO_ARDUINO = "activeng.pt.activenglab.arduino";
     public static final String MESSAGE_BT_STATE_CHANGE = "activeng.pt.activenglab.bluetooth";
     public static final String MESSAGE_BT_NAME = "activeng.pt.activenglab.bluetooth.name";

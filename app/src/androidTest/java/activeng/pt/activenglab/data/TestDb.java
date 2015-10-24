@@ -85,6 +85,8 @@ public class TestDb extends AndroidTestCase {
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CALIBRATED);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CAL_A);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CAL_B);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE);
 
         int columnNameIndex = c.getColumnIndex("name");
         do {

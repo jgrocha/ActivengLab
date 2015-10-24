@@ -25,7 +25,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class TemperatureDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
+    //private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     static final String DATABASE_NAME = "temperature.db";
 
@@ -55,7 +56,9 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 TemperatureContract.SensorEntry.COLUMN_METRIC + " INTEGER DEFAULT 1 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_CALIBRATED + " INTEGER DEFAULT 0 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_CAL_A + " FLOAT DEFAULT 0 NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_CAL_B + " FLOAT DEFAULT 1 NOT NULL " +
+                TemperatureContract.SensorEntry.COLUMN_CAL_B + " FLOAT DEFAULT 1 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL " +
                 " );";
         /*
         CREATE TABLE temperature(
@@ -134,9 +137,13 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
         // It does NOT depend on the version number for your application.
         // If you want to update the schema without wiping data, commenting out the next 2 lines
         // should be your top priority before modifying this method.
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.SensorEntry.TABLE_NAME);
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.TemperatureEntry.TABLE_NAME);
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.CalibrationEntry.TABLE_NAME);
-        onCreate(sqLiteDatabase);
+        //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.SensorEntry.TABLE_NAME);
+        //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.TemperatureEntry.TABLE_NAME);
+        //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.CalibrationEntry.TABLE_NAME);
+        //onCreate(sqLiteDatabase);
+        if (newVersion > oldVersion) {
+            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL");
+            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL");
+        }
     }
 }

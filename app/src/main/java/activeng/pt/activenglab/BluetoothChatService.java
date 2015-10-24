@@ -106,9 +106,9 @@ public class BluetoothChatService {
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "BluetoothChatService --> onReceive");
                 if (extras != null) {
-                    String temperatureStr = extras.getString(Intent.EXTRA_TEXT);
-                    Log.d("ActivEng", temperatureStr);
-                    write(temperatureStr + "\n");
+                    String message = extras.getString(Intent.EXTRA_TEXT);
+                    Log.d("ActivEng", message);
+                    write(message + "\n");
                 }
             }
         };
@@ -547,6 +547,7 @@ public class BluetoothChatService {
             int bytes, pos;
             StringBuilder queue = new StringBuilder("");
             String temp;
+            Intent intent;
             // Keep listening to the InputStream while connected
             while (true) {
                 try {
@@ -563,8 +564,24 @@ public class BluetoothChatService {
                             // Log.d("Temperatura", "limpa() #" + " -> " + temp);
                             // mHandler.obtainMessage(Constants.MESSAGE_READ, 0, 0, temp).sendToTarget();
                             Log.d("ActivEng", "sendBroadcast " + temp);
-                            Intent intent = new Intent(Constants.MESSAGE_TEMPERATURE).putExtra(Intent.EXTRA_TEXT, temp);
-                            mContext.sendBroadcast(intent);
+                            if (temp.length()>1) {
+                                switch (temp.charAt(0)) {
+                                    case 'R':
+                                        intent = new Intent(Constants.MESSAGE_TEMPERATURE).putExtra(Intent.EXTRA_TEXT, temp);
+                                        mContext.sendBroadcast(intent);
+                                        break;
+                                    case 'M':
+                                        intent = new Intent(Constants.MESSAGE_METADATA).putExtra(Intent.EXTRA_TEXT, temp);
+                                        mContext.sendBroadcast(intent);
+                                        break;
+                                    case 'S':
+                                        intent = new Intent(Constants.MESSAGE_SENSORMETADATA).putExtra(Intent.EXTRA_TEXT, temp);
+                                        mContext.sendBroadcast(intent);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                             pos = queue.indexOf("\n");
                         }
                     }

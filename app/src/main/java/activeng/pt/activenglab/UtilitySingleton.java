@@ -15,7 +15,9 @@
  */
 package activeng.pt.activenglab;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -23,6 +25,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+
+import activeng.pt.activenglab.data.TemperatureContract;
 
 /*
 we use a instance of the class (just one instance).
@@ -74,6 +78,21 @@ public class UtilitySingleton {
         return f.format(temperature);
     }
 
+    public void saveTemperature(double temperature, Long sensorId) {
+        Uri mNewUri;
+        ContentValues novosValues = new ContentValues();
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_SENSORID, sensorId);
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_VALUE, temperature);
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);
+
+        mNewUri = appContext.getContentResolver().insert(
+                TemperatureContract.TemperatureEntry.CONTENT_URI,   // the user dictionary content URI
+                novosValues                          // the values to insert
+        );
+    }
+
     public Temperature processMessage(String message, Long sensorId) {
         long sensor;
         Double t;
@@ -93,6 +112,7 @@ public class UtilitySingleton {
             } catch (NumberFormatException e) {
                 t = 0.0d;
             }
+            saveTemperature(t, sensorId);
             // TODO: number of decimals places
             return new Temperature(t, formatTemperature(t, 2));
         } else {

@@ -46,36 +46,34 @@
         android:focusableInTouchMode="false"/>
 
     <TextView
-        android:id="@+id/tvLabel_Max"
+        android:id="@+id/tvLabel_Offset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Maximum value"/>
+        android:text="Calibration (offset)"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/etMax"
-        android:layout_row="1"
-        android:layout_column="0"
-        android:text="350.000"
+        android:id="@+id/etCalOffset"
+        android:text=""
+        android:ems="4"
         android:clickable="false"
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"/>
 
     <TextView
-        android:id="@+id/tvLabel_Min"
+        android:id="@+id/tvLabel_Gain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lower value"/>
+        android:text="Calibration (gain)"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/etMin"
-        android:layout_row="1"
-        android:layout_column="0"
-        android:text="-1.000"
+        android:id="@+id/etCalGain"
+        android:text=""
+        android:ems="4"
         android:clickable="false"
         android:cursorVisible="false"
         android:focusable="false"

@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,7 +36,8 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     private EditText cal_new_read;
 
     private long sensorId = 0;
-    //private double cal_a, cal_b;
+    private double cal_a, cal_b;
+    private double cal_a_new = Double.MAX_VALUE, cal_b_new = Double.MAX_VALUE;
     private ContentValues currentSensor = null;
 
     public CalibrationActivityFragment() {
@@ -61,13 +64,20 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         connectionUpdates = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                double newcal;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "CalibrationActivityFragment --> onReceive");
                 if (extras != null) {
                     Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
                     if (temp != null) {
                         cal_current_read.setText(temp.getString());
-                        cal_new_read.setText(temp.getString());
+
+                        if (cal_a_new != Double.MAX_VALUE && cal_b_new != Double.MAX_VALUE) {
+                            newcal = cal_a_new + temp.getValue() * cal_b_new;
+                            cal_new_read.setText(UtilitySingleton.getInstance().formatTemperature(newcal, 2));
+                        } else {
+                            cal_new_read.setText("");
+                        }
                     }
                 }
             }
@@ -80,8 +90,8 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
                 currentSensor = (ContentValues) calIntent.getParcelableExtra(TemperatureContract.SensorEntry.TABLE_NAME);
                 sensorId = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
                 getActivity().setTitle("Now calibrating " + sensorId);
-                double cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
-                double cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
+                cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
+                cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
                 cal_current_offset.setText(UtilitySingleton.getInstance().formatTemperature(cal_a, 6));
                 cal_current_gain.setText(UtilitySingleton.getInstance().formatTemperature(cal_b, 6));
             }
@@ -90,6 +100,53 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         // http://stackoverflow.com/questions/33090978/change-listview-via-custom-simplecursoradapter
         return rootView;
         // return inflater.inflate(R.layout.fragment_calibration, container, false);
+    }
+
+    private void saveCalibration(View rootView) {
+        // send calibration to Arduino
+        String message = "C|" + sensorId + "|" + cal_a_new + "|" + cal_b_new;
+        //Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, "T1445177600");
+        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        getActivity().sendBroadcast(intent);
+        // TODO
+        // save calibration on local sqlite database
+        // update sensor
+        ContentValues updatedValues = new ContentValues();
+        // updatedValues.put(TemperatureContract.SensorEntry._ID, sensorId);
+        updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, cal_a_new);
+        updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, cal_b_new);
+        int count = getActivity().getContentResolver().update(
+                TemperatureContract.SensorEntry.CONTENT_URI, updatedValues, TemperatureContract.SensorEntry._ID + "= ?",
+                new String[] { Long.toString(sensorId)});
+        // create new entry in calibration
+        Uri mNewUri;
+        ContentValues novosValues = new ContentValues();
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_SENSORID, sensorId);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_A_OLD, cal_a);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_B_OLD, cal_b);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_A_NEW, cal_a_new);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_B_NEW, cal_b_new);
+        EditText et_cal_read_high = (EditText) rootView.findViewById(R.id.cal_read_high);
+        EditText et_cal_ref_high = (EditText) rootView.findViewById(R.id.cal_ref_high);
+        EditText et_cal_read_low = (EditText) rootView.findViewById(R.id.cal_read_low);
+        EditText et_cal_ref_low = (EditText) rootView.findViewById(R.id.cal_ref_low);
+        double cal_read_high;
+        double cal_ref_high;
+        double cal_read_low;
+        double cal_ref_low;
+        cal_read_high = Double.parseDouble(et_cal_read_high.getText().toString());
+        cal_ref_high = Double.parseDouble(et_cal_ref_high.getText().toString());
+        cal_read_low = Double.parseDouble(et_cal_read_low.getText().toString());
+        cal_ref_low = Double.parseDouble(et_cal_ref_low.getText().toString());
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_REF_VALUE_HIGH, cal_ref_high);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_REF_VALUE_LOW, cal_ref_low);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_HIGH, cal_read_high);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_LOW, cal_read_low);
+        mNewUri = getActivity().getContentResolver().insert(TemperatureContract.CalibrationEntry.CONTENT_URI, novosValues);
+        // TODO
+        // close this activity
+        getActivity().onBackPressed();
     }
 
     private void computeCalibration(View rootView) {
@@ -109,10 +166,20 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
             cal_read_low = Double.parseDouble(et_cal_read_low.getText().toString());
             cal_ref_low = Double.parseDouble(et_cal_ref_low.getText().toString());
 
-            ((EditText) rootView.findViewById(R.id.cal_new_offset)).setText(String.valueOf(cal_read_high * 2));
+            //cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
+            //cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
+
+            cal_b_new = cal_b * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
+            cal_a_new = cal_read_low - (cal_ref_low - cal_a) * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
+
+            ((EditText) rootView.findViewById(R.id.cal_new_offset)).setText(UtilitySingleton.getInstance().formatTemperature(cal_a_new, 6));
+            ((EditText) rootView.findViewById(R.id.cal_new_gain)).setText(UtilitySingleton.getInstance().formatTemperature(cal_b_new, 6));
 
         } catch (NumberFormatException e) {
-
+            cal_a_new = Double.MAX_VALUE;
+            cal_b_new = Double.MAX_VALUE;
+            // immediate feedback
+            cal_new_read.setText("");
         }
     }
 
@@ -126,8 +193,11 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
                 break;
             case R.id.cal_button_save:
                 Log.d("Life cyle", "save()");
-                Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, "T1445177600");
-                getActivity().sendBroadcast(intent);
+                if (cal_a_new != Double.MAX_VALUE && cal_b_new != Double.MAX_VALUE) {
+                    // TODO
+                    // enable or disable SAVE button
+                    saveCalibration(rootView);
+                }
                 break;
             default:
                 break;
