@@ -30,12 +30,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import activeng.pt.activenglab.data.TemperatureContract;
@@ -50,11 +54,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     private SensorCursorAdapter mySensorCursorAdapter;
 
-    private final Handler mHandler = new Handler();
-
-    private Runnable mTimer2;
-    private LineGraphSeries<DataPoint> mSeries2;
-    private double graph2LastXValue = 5d;
+    private LineGraphSeries<DataPoint> series;
 
     BroadcastReceiver connectionUpdates;
     private EditText etCurrentRead;
@@ -102,29 +102,60 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         connectionUpdates = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String messageType;
-                long sensor;
-                double t;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "DetailActivityFragment --> onReceive");
                 if (extras != null) {
-
                     Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
                     if (temp != null) {
                         etCurrentRead.setText( temp.getString() );
-                        mSeries2.appendData(new DataPoint(graph2LastXValue, temp.getValue()), true, 40);
+                        Log.d("ActivEng", "d5 " + temp.getMillis());
+                        series.appendData(new DataPoint(new Date(temp.getMillis()), temp.getValue()), true, 40);
                     }
-
                 }
             }
         };
 
-        GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph);
-        mSeries2 = new LineGraphSeries<DataPoint>();
-        graph2.addSeries(mSeries2);
-        graph2.getViewport().setXAxisBoundsManual(true);
-        graph2.getViewport().setMinX(0);
-        graph2.getViewport().setMaxX(40);
+        // generate Dates
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.add(Calendar.SECOND, -30);
+        Date d4 = calendar.getTime();
+        Log.d("ActivEng", "d4 " + d4.toString() + " " + d4.getTime());
+
+        calendar.add(Calendar.SECOND, -30);
+        Date d3 = calendar.getTime();
+        Log.d("ActivEng", "d3 " + d3.toString() + " " + d3.getTime());
+
+        calendar.add(Calendar.SECOND, -30);
+        Date d2 = calendar.getTime();
+        Log.d("ActivEng", "d2 " + d2.toString() + " " + d2.getTime());
+
+        calendar.add(Calendar.SECOND, -30);
+        Date d1 = calendar.getTime();
+        Log.d("ActivEng", "d1 " + d1.toString() + " " + d1.getTime());
+
+        GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
+
+        // you can directly pass Date objects to DataPoint-Constructor
+        // this will convert the Date to double via Date#getTime()
+        series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+                new DataPoint(d1, 1),
+                new DataPoint(d2, 5),
+                new DataPoint(d3, 3),
+                new DataPoint(d4, 22),
+        });
+        graph.addSeries(series);
+
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity(), format));
+        graph.getGridLabelRenderer().setNumHorizontalLabels(4); // only 4 because of the space
+
+        // set manual x bounds to have nice steps
+        graph.getViewport().setMinX(d1.getTime());
+        graph.getViewport().setMaxX(d4.getTime());
+        graph.getViewport().setXAxisBoundsManual(true);
+
+        //series.appendData(new DataPoint(d4, 7), true, 40);
 
         return rootView;
     }
@@ -201,42 +232,12 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         Log.d("ActivEng", "DetailActivityFragment registerReceiver");
         getActivity().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
 
-        //mTimer2 = new Runnable() {
-        //    @Override
-        //    public void run() {
-        //        graph2LastXValue += 1d;
-        //        mSeries2.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
-        //        mHandler.postDelayed(this, 1000);
-        //    }
-        //};
-        //mHandler.postDelayed(mTimer2, 1000);
     }
 
     @Override
     public void onPause() {
-        mHandler.removeCallbacks(mTimer2);
         getActivity().unregisterReceiver(this.connectionUpdates);
         super.onPause();
-    }
-
-    private DataPoint[] generateData() {
-        int count = 30;
-        DataPoint[] values = new DataPoint[count];
-        for (int i = 0; i < count; i++) {
-            double x = i;
-            double f = mRand.nextDouble() * 0.15 + 0.3;
-            double y = Math.sin(i * f + 2) + mRand.nextDouble() * 0.3;
-            DataPoint v = new DataPoint(x, y);
-            values[i] = v;
-        }
-        return values;
-    }
-
-    double mLastRandom = 2;
-    Random mRand = new Random();
-
-    private double getRandom() {
-        return mLastRandom += mRand.nextDouble() * 0.5 - 0.25;
     }
 
     @Override

@@ -27,25 +27,6 @@
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
-        android:id="@+id/tvLabel_CurrentRead"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Current read"/>
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/etCurrentRead"
-        android:layout_row="1"
-        android:layout_column="0"
-        android:textSize="24sp"
-        android:text="231.335"
-        android:clickable="false"
-        android:cursorVisible="false"
-        android:focusable="false"
-        android:focusableInTouchMode="false"/>
-
-    <TextView
         android:id="@+id/tvLabel_Offset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

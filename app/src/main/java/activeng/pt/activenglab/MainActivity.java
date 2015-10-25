@@ -210,11 +210,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void syncronizeTime() {
+        // syncronize clocks
+        String message = "T|" + System.currentTimeMillis()/1000;
+        Log.d("ActivEng", "Set time: " + message);
+        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        this.sendBroadcast(intent);
+    }
+
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             Log.d("ActivEng", "handleMessage");
-            //FragmentActivity activity = getActivity();
+            //Context context = getBaseContext();
             switch (msg.what) {
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
@@ -222,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             //mConversationArrayAdapter.clear();
                             Log.d("ActivEng", "BluetoothChatService.STATE_CONNECTED");
+                            syncronizeTime();
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             //setStatus(R.string.title_connecting);
@@ -293,8 +302,8 @@ public class MainActivity extends AppCompatActivity {
         //});
 
         // Initialize the BluetoothChatService to perform bluetooth connections
-        //mChatService = new BluetoothChatService(this, mHandler);
-        mChatService = new BluetoothChatService(this);
+        mChatService = new BluetoothChatService(this, mHandler);
+        //mChatService = new BluetoothChatService(this);
 
         // Initialize the buffer for outgoing messages
         //mOutStringBuffer = new StringBuffer("");

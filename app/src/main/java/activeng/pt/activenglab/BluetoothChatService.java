@@ -72,7 +72,7 @@ public class BluetoothChatService {
 
     // Member fields
     private final BluetoothAdapter mAdapter;
-    // private final Handler mHandler;
+     private final Handler mHandler;
     private AcceptThread mSecureAcceptThread;
     private AcceptThread mInsecureAcceptThread;
     private ConnectThread mConnectThread;
@@ -93,12 +93,12 @@ public class BluetoothChatService {
      *
      * @param context The UI Activity Context
      */
-    //public BluetoothChatService(Context context, Handler handler) {
-    public BluetoothChatService(Context context) {
+    public BluetoothChatService(Context context, Handler handler) {
+    // public BluetoothChatService(Context context) {
         mContext = context;
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
-        //mHandler = handler;
+        mHandler = handler;
 
         connectionUpdates = new BroadcastReceiver() {
             @Override
@@ -125,7 +125,7 @@ public class BluetoothChatService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        // mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+         mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
 
         Intent intent = new Intent(Constants.MESSAGE_BT_STATE_CHANGE).putExtra(Intent.EXTRA_TEXT, state);
         mContext.sendBroadcast(intent);
@@ -247,11 +247,13 @@ public class BluetoothChatService {
         Intent intent = new Intent(Constants.MESSAGE_BT_NAME).putExtra(Intent.EXTRA_TEXT, device.getName());
         mContext.sendBroadcast(intent);
 
-        setState(STATE_CONNECTED);
 
         Log.d("ActivEng", "CalibrationActivityFragment registerReceiver onResume()");
         mContext.getApplicationContext().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TO_ARDUINO));
         registered = true;
+
+        setState(STATE_CONNECTED);
+
     }
 
     /**

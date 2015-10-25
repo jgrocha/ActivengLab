@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
@@ -96,12 +97,13 @@ public class UtilitySingleton {
     public Temperature processMessage(String message, Long sensorId) {
         long sensor;
         Double t;
+        long instant;
         String[] parts = message.split("\\|", -1);
         // R|1|26.430|4423
         //parts[0] = "R";
         //parts[1] = "1";
         //parts[2] = "26.430";
-        //parts[3] = "1445279973";
+        //parts[3] = "1445279973"; // seconds, not milliseconds
         //Log.d("ActivEng", message);
         assert (message.charAt(0) == 'R');
         assert (sensorId != 0);
@@ -109,12 +111,14 @@ public class UtilitySingleton {
         if (sensorId == sensor) {
             try {
                 t = Double.parseDouble(parts[2]);
+                instant = Long.parseLong(parts[3]);
             } catch (NumberFormatException e) {
                 t = 0.0d;
+                instant = 0;
             }
             saveTemperature(t, sensorId);
             // TODO: number of decimals places
-            return new Temperature(t, formatTemperature(t, 2));
+            return new Temperature(t, formatTemperature(t, 2), instant);
         } else {
             return null;
         }
@@ -124,10 +128,14 @@ public class UtilitySingleton {
 final class Temperature {
     private final double value;
     private final String str;
+    //private final Date datetime;
+    private final long millis;
 
-    public Temperature(double first, String second) {
+    public Temperature(double first, String second, long dt) {
         this.value = first;
         this.str = second;
+        //this.datetime = new Date(dt);
+        this.millis = dt*1000;
     }
 
     public double getValue() {
@@ -136,5 +144,9 @@ final class Temperature {
 
     public String getString() {
         return str;
+    }
+
+    public long getMillis() {
+        return millis;
     }
 }
