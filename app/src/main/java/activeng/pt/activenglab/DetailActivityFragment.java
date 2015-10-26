@@ -8,14 +8,11 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,11 +20,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
@@ -40,7 +34,6 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
@@ -49,7 +42,8 @@ import activeng.pt.activenglab.data.TemperatureContract;
  */
 public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private long sensorId = 0;
+    private long _ID = 0;
+
     private ContentValues currentSensor = null;
 
     private SensorCursorAdapter mySensorCursorAdapter;
@@ -105,7 +99,9 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "DetailActivityFragment --> onReceive");
                 if (extras != null) {
-                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
+                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT),
+                            currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID),
+                            currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
                     if (temp != null) {
                         etCurrentRead.setText( temp.getString() );
                         Log.d("ActivEng", "d5 " + temp.getMillis());
@@ -171,8 +167,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         Uri uri;
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry._ID)) {
-            sensorId = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
-            uri = TemperatureContract.SensorEntry.buildSensorUri(sensorId);
+            _ID = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
+            uri = TemperatureContract.SensorEntry.buildSensorUri(_ID);
             Log.d("SensorCursorAdapter", uri.toString());
             args.putParcelable("URI", uri);
             getLoaderManager().initLoader(0, args, this);

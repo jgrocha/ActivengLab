@@ -34,11 +34,15 @@ public class TemperatureContract {
     public static final class SensorEntry implements BaseColumns {
         // Table name and columns
         public static final String TABLE_NAME = "sensor";
+        public static final String COLUMN_SENSORID = "sensorid";
+        public static final String COLUMN_ADDRESS = "address";
         public static final String COLUMN_LOCATION = "location";
         public static final String COLUMN_INSTALLDATE = "installdate";
         public static final String COLUMN_SENSORTYPE = "sensortype";
         public static final String COLUMN_METRIC = "metric";
         public static final String COLUMN_CALIBRATED = "calibrated";
+        public static final String COLUMN_QUANTITY = "quantity";
+        public static final String COLUMN_DECIMALPLACES = "decimalplaces";
         public static final String COLUMN_CAL_A = "cal_a";
         public static final String COLUMN_CAL_B = "cal_b";
         // read_interval 1, 2, 5, 10, 20, 30, 60
@@ -72,6 +76,7 @@ public class TemperatureContract {
         public static final String TABLE_NAME = "temperature";
         // Column with the foreign key into the sensor table.
         public static final String COLUMN_SENSORID = "sensorid";
+        public static final String COLUMN_ADDRESS = "address";
         public static final String COLUMN_CREATED = "created";
         public static final String COLUMN_VALUE = "value";
         public static final String COLUMN_METRIC = "metric";
@@ -97,6 +102,7 @@ public class TemperatureContract {
         public static final String TABLE_NAME = "calibration";
         // Column with the foreign key into the sensor table.
         public static final String COLUMN_SENSORID = "sensorid";
+        public static final String COLUMN_ADDRESS = "address";
         public static final String COLUMN_CREATED = "created";
         public static final String COLUMN_CAL_A_OLD = "cal_a_old";
         public static final String COLUMN_CAL_B_OLD = "cal_b_old";

@@ -36,7 +36,7 @@ public class TestDb extends AndroidTestCase {
         sure that we always have a clean test.
      */
     public void setUp() {
-        // deleteTheDatabase();
+        deleteTheDatabase();
     }
     
     public void testCreateDb() throws Throwable {
@@ -78,11 +78,15 @@ public class TestDb extends AndroidTestCase {
         // Build a HashSet of all of the column names we want to look for
         final HashSet<String> sensorColumnHashSet = new HashSet<String>();
         sensorColumnHashSet.add(TemperatureContract.SensorEntry._ID);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_SENSORID);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_ADDRESS);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_LOCATION);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_METRIC);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CALIBRATED);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_QUANTITY);
+        sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_DECIMALPLACES);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CAL_A);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_CAL_B);
         sensorColumnHashSet.add(TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL);
@@ -113,7 +117,7 @@ public class TestDb extends AndroidTestCase {
         assertFalse("Error: sensor Not Inserted Correctly", sensorRowId == -1L);
         TemperatureDbHelper dbHelper = new TemperatureDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues temperatureValues = TestUtilities.createTemperatureValues(sensorRowId);
+        ContentValues temperatureValues = TestUtilities.createTemperatureValues(TestUtilities.TEST_SENSOR, TestUtilities.TEST_SENSOR_ADDRESS);
         long temperatureRowId = db.insert(TemperatureContract.TemperatureEntry.TABLE_NAME, null, temperatureValues);
         assertTrue(temperatureRowId != -1);
         Cursor temperatureCursor = db.query(
@@ -139,7 +143,7 @@ public class TestDb extends AndroidTestCase {
         assertFalse("Error: sensor Not Inserted Correctly", sensorRowId == -1L);
         TemperatureDbHelper dbHelper = new TemperatureDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues calibrationValues = TestUtilities.createCalibrationValues(sensorRowId);
+        ContentValues calibrationValues = TestUtilities.createCalibrationValues(TestUtilities.TEST_SENSOR, TestUtilities.TEST_SENSOR_ADDRESS);
         long calibrationRowId = db.insert(TemperatureContract.CalibrationEntry.TABLE_NAME, null, calibrationValues);
         assertTrue(calibrationRowId != -1);
         Cursor calibrationCursor = db.query(

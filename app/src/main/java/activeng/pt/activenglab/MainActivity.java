@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     private BluetoothChatService mChatService = null;
     private String mConnectedDeviceName = null;
+    private String mConnectedDeviceAddress = null;
 
     private Switch switcha = null;
 
@@ -260,11 +261,12 @@ public class MainActivity extends AppCompatActivity {
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
+                    mConnectedDeviceAddress = msg.getData().getString(Constants.DEVICE_ADRESS);
                     //if (null != activity) {
                     //    Toast.makeText(this, "Connected to "
                     //            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                     //}
-                    Log.d("ActivEng", "Constants.MESSAGE_DEVICE_NAME " + mConnectedDeviceName);
+                    Log.d("ActivEng", "Constants.MESSAGE_DEVICE_NAME " + mConnectedDeviceName + " @ " + mConnectedDeviceAddress);
                     break;
                 case Constants.MESSAGE_TOAST:
                     //if (null != activity) {

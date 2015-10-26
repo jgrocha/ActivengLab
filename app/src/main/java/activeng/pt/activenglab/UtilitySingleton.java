@@ -79,11 +79,18 @@ public class UtilitySingleton {
         return f.format(temperature);
     }
 
-    public void saveTemperature(double temperature, Long sensorId) {
+    public void saveTemperature(double temperature, int sensorId, String address, long epoch) {
         Uri mNewUri;
+
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        //Date date = new Date(epoch*1000);
+
         ContentValues novosValues = new ContentValues();
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_SENSORID, sensorId);
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_ADDRESS, address);
+        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, "datetime(" + epoch + ", 'unixepoch')" );
+        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(date) );
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_VALUE, temperature);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);
@@ -94,7 +101,7 @@ public class UtilitySingleton {
         );
     }
 
-    public Temperature processMessage(String message, Long sensorId) {
+    public Temperature processMessage(String message, int sensorId, String address) {
         long sensor;
         Double t;
         long instant;
@@ -116,7 +123,7 @@ public class UtilitySingleton {
                 t = 0.0d;
                 instant = 0;
             }
-            saveTemperature(t, sensorId);
+            saveTemperature(t, sensorId, address, instant);
             // TODO: number of decimals places
             return new Temperature(t, formatTemperature(t, 2), instant);
         } else {

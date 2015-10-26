@@ -91,8 +91,8 @@ public class TestInsertTemperatureData extends AndroidTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Log.d(LOG_TAG, ">>> remove tudo o que já existe...! ");
-        //deleteAllRecords();
+        // Log.d(LOG_TAG, ">>> remove tudo o que já existe...! ");
+        // deleteAllRecords();
     }
 
     public void testInsertTemperature() {
@@ -102,7 +102,8 @@ public class TestInsertTemperatureData extends AndroidTestCase {
 
         Uri mNewUri;
         ContentValues novosValues = new ContentValues();
-        novosValues.put(TemperatureEntry.COLUMN_SENSORID, 1);
+        novosValues.put(TemperatureEntry.COLUMN_SENSORID, TestUtilities.TEST_SENSOR);
+        novosValues.put(TemperatureEntry.COLUMN_ADDRESS, TestUtilities.TEST_SENSOR_ADDRESS);
         novosValues.put(TemperatureEntry.COLUMN_CREATED, "2015-10-21 15:47:00");
         novosValues.put(TemperatureEntry.COLUMN_VALUE, 12.34d);
         novosValues.put(TemperatureEntry.COLUMN_METRIC, 1);

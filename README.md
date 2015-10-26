@@ -101,16 +101,35 @@ Emulator:
 
 Android Device Monitor → File Explorer → data/data/activeng.pt.activenglab/databases/temperature.db
 
-Real device (not working):
+Real device (working):
+
+From device to local:
 
 ```
-/home/jgr/Android/Sdk/platform-tools/adb -d shell "run-as activeng.pt.activenglab ls /data/data/activeng.pt.activenglab/databases/"
-/home/jgr/Android/Sdk/platform-tools/adb pull /data/data/activeng.pt.activenglab/databases/temperature.db /home/jgr/AndroidStudioProjects/ActivengLab/
-/home/jgr/Android/Sdk/platform-tools/adb push /home/jgr/AndroidStudioProjects/ActivengLab/temperature.db /data/data/activeng.pt.activenglab/databases/
- 
-/home/jgr/Android/Sdk/platform-tools/adb push /home/jgr/AndroidStudioProjects/ActivengLab/temperature.db /sdcard/temperature.db
-/home/jgr/Android/Sdk/platform-tools/adb -d shell "run-as activeng.pt.activenglab cat /sdcard/temperature.db > /data/data/activeng.pt.activenglab/databases/temperature.db"
-exit
+#!/bin/bash
+
+# cd ~/Android/Sdk/platform-tools
+# ~/Android/Sdk/platform-tools/adb devices
+# List of devices attached
+# KBLJZTKVAICMEQ6H      device
+# ./adb -d shell "run-as activeng.pt.activenglab ls /data/data/activeng.pt.activenglab/databases/"
+# temperature.db
+# temperature.db-journal
+# Copy the database file from your application folder to your sd card.
+~/Android/Sdk/platform-tools/adb -d shell "run-as activeng.pt.activenglab cat /data/data/activeng.pt.activenglab/databases/temperature.db > /sdcard/temperature.db"
+~/Android/Sdk/platform-tools/adb pull /sdcard/temperature.db
+sqlitebrowser temperature.db
+```
+
+Local to device:
+
+```
+#!/bin/bash
+
+~/Android/Sdk/platform-tools/adb push temperature.db /sdcard/
+~/Android/Sdk/platform-tools/adb shell
+su
+cp /sdcard/temperature.db /data/data/activeng.pt.activenglab/databases/temperature.db
 ```
 
 ### Activities and Layout
@@ -164,6 +183,8 @@ DetailActivity
             Custom View (from SensorCursorAdapter - just one Sensor)
 ```
 ### Charts and Graphs
+
+[GraphView](https://github.com/jjoe64/GraphView)
 
 build.gradle (Module:app)
 
@@ -251,6 +272,13 @@ String output = nf.format(val);
 ### PID
 
 [Arduino PID library](http://playground.arduino.cc/Code/PIDLibrary)
+
+### Remote synchronization
+
+#### Sign in with Google
+
+[Add Google Sign-In to Your Android App](https://developers.google.com/identity/sign-in/android/)
+
 
 ##### Notes
 

@@ -79,24 +79,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 // if it cannot seek to that position.
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
-                    long sensorId = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
-                    //String sensorType = cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
-
-                    //Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, sensorId + sensorType);
-                    // uri = Uri.parse(stringUri);
+                    long _ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
                     Intent intent = new Intent(getActivity(), DetailActivity.class);
-                    // The URI will be used to retrieve the data
-                    intent.putExtra(Intent.EXTRA_TEXT, TemperatureContract.SensorEntry.buildSensorUri(sensorId).toString());
-                    // But I'm sending the data also...
-                    // TODO: use column names from contract
-                    intent.putExtra(TemperatureContract.SensorEntry._ID, sensorId);
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_LOCATION, cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_LOCATION)));
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE)));
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE)));
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_METRIC, 1);
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, 1);
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CAL_A, -0.997);
-                    //intent.putExtra(TemperatureContract.SensorEntry.COLUMN_CAL_B, 1.12);
+                    intent.putExtra(TemperatureContract.SensorEntry._ID, _ID);
                     startActivity(intent);
                 }
             }

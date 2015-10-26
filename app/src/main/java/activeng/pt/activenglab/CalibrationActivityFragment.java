@@ -23,6 +23,8 @@ import com.jjoe64.graphview.series.DataPoint;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
@@ -35,7 +37,9 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     private EditText cal_current_read;
     private EditText cal_new_read;
 
-    private long sensorId = 0;
+    private long _ID = 0;           // Local _ID autoincrement
+    private int sensorId = 0;       // Arduino ID
+    private String address;       // Arduino bluetooth address
     private double cal_a, cal_b;
     private double cal_a_new = Double.MAX_VALUE, cal_b_new = Double.MAX_VALUE;
     private ContentValues currentSensor = null;
@@ -68,7 +72,7 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "CalibrationActivityFragment --> onReceive");
                 if (extras != null) {
-                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId);
+                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId, address);
                     if (temp != null) {
                         cal_current_read.setText(temp.getString());
 
@@ -88,7 +92,10 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
             if (calIntent.hasExtra(TemperatureContract.SensorEntry.TABLE_NAME)) {
                 //sensorId = Long.parseLong(calIntent.getStringExtra("_id"), 10);
                 currentSensor = (ContentValues) calIntent.getParcelableExtra(TemperatureContract.SensorEntry.TABLE_NAME);
-                sensorId = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
+                _ID = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
+                sensorId = currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID);
+                address = currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS);
+
                 getActivity().setTitle("Now calibrating " + sensorId);
                 cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
                 cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
@@ -112,17 +119,24 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         // save calibration on local sqlite database
         // update sensor
         ContentValues updatedValues = new ContentValues();
-        // updatedValues.put(TemperatureContract.SensorEntry._ID, sensorId);
         updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, cal_a_new);
         updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, cal_b_new);
         int count = getActivity().getContentResolver().update(
                 TemperatureContract.SensorEntry.CONTENT_URI, updatedValues, TemperatureContract.SensorEntry._ID + "= ?",
-                new String[] { Long.toString(sensorId)});
+                new String[] { Long.toString(_ID)});
         // create new entry in calibration
         Uri mNewUri;
+
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ////Date date = new Date(System.currentTimeMillis());
+        //Date date = new Date();
+
         ContentValues novosValues = new ContentValues();
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_SENSORID, sensorId);
-        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_ADDRESS, address);
+        //novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
+        //novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CREATED, "datetime(" + System.currentTimeMillis()/1000 + ", 'unixepoch')" );
+        //novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CREATED, dateFormat.format(date) );
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_A_OLD, cal_a);
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_B_OLD, cal_b);
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_CAL_A_NEW, cal_a_new);

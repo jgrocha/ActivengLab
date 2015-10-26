@@ -18,6 +18,7 @@ package activeng.pt.activenglab.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Manages a local database for weather data.
@@ -25,8 +26,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class TemperatureDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    //private static final int DATABASE_VERSION = 1;
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
+    //private static final int DATABASE_VERSION = 2;
+    //private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "temperature.db";
 
@@ -39,27 +41,53 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
         /*
         CREATE TABLE sensor(
             _id INTEGER PRIMARY KEY autoincrement,
+            sensorid integer NOT NULL,
+            address TEXT NOT NULL,
             location TEXT NOT NULL,
             installdate DATETIME DEFAULT CURRENT_TIMESTAMP,
             sensortype TEXT NOT NULL,
             metric INTEGER DEFAULT 1 NOT NULL,
             calibrated INTEGER DEFAULT 0 NOT NULL,
+            quantity CHAR(1) DEFAULT 'T' NOT NULL,
+            decimalplaces SMALLINT DEFAULT 3 NOT NULL,
             cal_a FLOAT DEFAULT 0 NOT NULL,
-            cal_b FLOAT DEFAULT 1 NOT NULL
+            cal_b FLOAT DEFAULT 1 NOT NULL,
+            read_interval INTEGER DEFAULT 2000 NOT NULL,
+            record_sample INTEGER DEFAULT 1 NOT NULL,
+            unique (sensorid, address)
         );
+        create unique index sensor_idx ON sensor(sensorid, address);
         */
         final String SQL_CREATE_SENSOR_TABLE = "CREATE TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " (" +
-                TemperatureContract.SensorEntry._ID + " INTEGER PRIMARY KEY," +
+                //TemperatureContract.SensorEntry._ID + " INTEGER PRIMARY KEY," +
+                TemperatureContract.SensorEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                TemperatureContract.SensorEntry.COLUMN_SENSORID + " INTEGER NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_ADDRESS + " TEXT NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_LOCATION + " TEXT NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_INSTALLDATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 TemperatureContract.SensorEntry.COLUMN_SENSORTYPE + " TEXT NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_METRIC + " INTEGER DEFAULT 1 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_CALIBRATED + " INTEGER DEFAULT 0 NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_QUANTITY + " CHAR(1) DEFAULT 'T' NOT NULL, " +
+                TemperatureContract.SensorEntry.COLUMN_DECIMALPLACES + " INTEGER DEFAULT 3 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_CAL_A + " FLOAT DEFAULT 0 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_CAL_B + " FLOAT DEFAULT 1 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL, " +
-                TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL " +
-                " );";
+                TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL, " +
+                "unique (" + TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.SensorEntry.COLUMN_ADDRESS + ")" +
+                ");";
+        Log.d("ActivEng", SQL_CREATE_SENSOR_TABLE);
+        final String SQL_CREATE_SENSOR_TABLE_INDEX = "CREATE UNIQUE INDEX " +
+                TemperatureContract.SensorEntry.TABLE_NAME + "_idx ON " +
+                TemperatureContract.SensorEntry.TABLE_NAME + " ( " +
+                TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.SensorEntry.COLUMN_ADDRESS + " );";
+        Log.d("ActivEng", SQL_CREATE_SENSOR_TABLE_INDEX);
+
+        sqLiteDatabase.execSQL(SQL_CREATE_SENSOR_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_SENSOR_TABLE_INDEX);
+
         /*
         CREATE TABLE temperature(
             _id INTEGER PRIMARY KEY autoincrement,
@@ -78,18 +106,33 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 // for a certain date and all dates *following*, so the forecast data
                 // should be sorted accordingly.
                 TemperatureContract.TemperatureEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-
                 // the ID of the location entry associated with this weather data
                 TemperatureContract.TemperatureEntry.COLUMN_SENSORID + " INTEGER NOT NULL, " +
+                TemperatureContract.TemperatureEntry.COLUMN_ADDRESS + " TEXT NOT NULL, " +
                 TemperatureContract.TemperatureEntry.COLUMN_CREATED + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 TemperatureContract.TemperatureEntry.COLUMN_VALUE + " FLOAT NOT NULL, " +
                 TemperatureContract.TemperatureEntry.COLUMN_METRIC + " INTEGER DEFAULT 1 NOT NULL," +
                 TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED + " INTEGER DEFAULT 0 NOT NULL, " +
 
                 // Set up the location column as a foreign key to location table.
-                " FOREIGN KEY (" + TemperatureContract.TemperatureEntry.COLUMN_SENSORID + ") REFERENCES " +
-                TemperatureContract.SensorEntry.TABLE_NAME + " (" + TemperatureContract.SensorEntry._ID + ")" +
+                " FOREIGN KEY (" + TemperatureContract.TemperatureEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.TemperatureEntry.COLUMN_ADDRESS + ") REFERENCES " +
+                TemperatureContract.SensorEntry.TABLE_NAME + " (" +
+                TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.SensorEntry.COLUMN_ADDRESS + ") ON DELETE CASCADE " +
                 ");";
+        Log.d("ActivEng", SQL_CREATE_TEMPERATURE_TABLE);
+        final String SQL_CREATE_TEMPERATURE_TABLE_INDEX = "CREATE INDEX " +
+                TemperatureContract.TemperatureEntry.TABLE_NAME + "_idx ON " +
+                TemperatureContract.TemperatureEntry.TABLE_NAME + "( " +
+                TemperatureContract.TemperatureEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.TemperatureEntry.COLUMN_ADDRESS + ", " +
+                TemperatureContract.TemperatureEntry.COLUMN_CREATED + " );";
+        Log.d("ActivEng", SQL_CREATE_TEMPERATURE_TABLE_INDEX);
+
+        sqLiteDatabase.execSQL(SQL_CREATE_TEMPERATURE_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_TEMPERATURE_TABLE_INDEX);
+
         /*
         CREATE TABLE calibration(
             _id INTEGER PRIMARY KEY autoincrement,
@@ -110,6 +153,7 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 TemperatureContract.CalibrationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 // the ID of the location entry associated with this weather data
                 TemperatureContract.CalibrationEntry.COLUMN_SENSORID + " INTEGER NOT NULL, " +
+                TemperatureContract.CalibrationEntry.COLUMN_ADDRESS + " TEXT NOT NULL, " +
                 TemperatureContract.CalibrationEntry.COLUMN_CREATED + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 TemperatureContract.CalibrationEntry.COLUMN_CAL_A_OLD + " FLOAT NOT NULL, " +
                 TemperatureContract.CalibrationEntry.COLUMN_CAL_B_OLD + " FLOAT NOT NULL, " +
@@ -120,13 +164,28 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_HIGH + " FLOAT NOT NULL, " +
                 TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_LOW + " FLOAT NOT NULL, " +
                 // Set up the location column as a foreign key to location table.
-                " FOREIGN KEY (" + TemperatureContract.CalibrationEntry.COLUMN_SENSORID + ") REFERENCES " +
-                TemperatureContract.SensorEntry.TABLE_NAME + " (" + TemperatureContract.SensorEntry._ID + ")" +
+                " FOREIGN KEY (" + TemperatureContract.CalibrationEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.CalibrationEntry.COLUMN_ADDRESS + ") REFERENCES " +
+                TemperatureContract.SensorEntry.TABLE_NAME + " (" +
+                TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.SensorEntry.COLUMN_ADDRESS + ") ON DELETE CASCADE " +
                 ");";
+        Log.d("ActivEng", SQL_CREATE_CALIBRATION_TABLE);
+        //final String SQL_CREATE_CALIBRATION_TABLE_INDEX = "CREATE UNIQUE INDEX " +
+        //        TemperatureContract.SensorEntry.TABLE_NAME + "_idx ON " +
+        //        TemperatureContract.SensorEntry.TABLE_NAME + "( " +
+        //        TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
+        //        TemperatureContract.SensorEntry.COLUMN_ADDRESS + " );";
+        final String SQL_CREATE_CALIBRATION_TABLE_INDEX = "CREATE INDEX " +
+                TemperatureContract.CalibrationEntry.TABLE_NAME + "_idx ON " +
+                TemperatureContract.CalibrationEntry.TABLE_NAME + "( " +
+                TemperatureContract.CalibrationEntry.COLUMN_SENSORID + ", " +
+                TemperatureContract.CalibrationEntry.COLUMN_ADDRESS + ", " +
+                TemperatureContract.CalibrationEntry.COLUMN_CREATED + " );";
+        Log.d("ActivEng", SQL_CREATE_CALIBRATION_TABLE_INDEX);
 
-        sqLiteDatabase.execSQL(SQL_CREATE_SENSOR_TABLE);
-        sqLiteDatabase.execSQL(SQL_CREATE_TEMPERATURE_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_CALIBRATION_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_CALIBRATION_TABLE_INDEX);
     }
 
     @Override
@@ -141,9 +200,17 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
         //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.TemperatureEntry.TABLE_NAME);
         //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.CalibrationEntry.TABLE_NAME);
         //onCreate(sqLiteDatabase);
-        if (newVersion > oldVersion) {
-            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL");
-            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL");
-        }
+        //if ((newVersion > oldVersion) && (oldVersion == 1)) {
+        //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL");
+        //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL");
+        //}
+        //if ((newVersion > oldVersion) && (oldVersion == 2)) {
+        //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_ADDRESS + " TEXT NOT NULL");
+        //}
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        db.setForeignKeyConstraintsEnabled(true);
     }
 }
