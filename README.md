@@ -186,6 +186,8 @@ DetailActivity
 
 [GraphView](https://github.com/jjoe64/GraphView)
 
+[x- axis time resolution](https://github.com/jjoe64/GraphView/issues/368)
+
 build.gradle (Module:app)
 
 ```
@@ -222,6 +224,14 @@ More on [broadcast](http://stackoverflow.com/questions/17082393/handlers-and-mul
 
 // TODO
 http://www.androprogrammer.com/2013/10/database-demo-database-operations-with_13.html
+
+### Communication between BluetoothChatService and Activities and Fragments
+
+* Handlers
+* Broadcast sender and receivers (using Intents).
+* [Local Broadcast](http://stackoverflow.com/questions/25246185/what-is-more-efficient-broadcast-receiver-or-handler/25246377#25246377) sender and receivers (using Intents)
+** Local Broadcast has a [sendBroadcastSync](http://developer.android.com/reference/android/support/v4/content/LocalBroadcastManager.html)
+* [EventBus](https://github.com/greenrobot/EventBus) seems a good alternative
 
 ### Convertions: String versus Double
 

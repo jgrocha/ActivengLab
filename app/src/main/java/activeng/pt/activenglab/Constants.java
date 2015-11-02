@@ -27,6 +27,7 @@ public interface Constants {
     public static final int MESSAGE_WRITE = 3;
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;
+    //public static final int MESSAGE_METADATA = 1025;
 
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
@@ -40,5 +41,10 @@ public interface Constants {
     public static final String MESSAGE_BT_STATE_CHANGE = "activeng.pt.activenglab.bluetooth";
     public static final String MESSAGE_BT_NAME = "activeng.pt.activenglab.bluetooth.name";
     public static final String MESSAGE_BT_FAIL = "activeng.pt.activenglab.bluetooth.fail";
+
+    public static final int STATE_NONE = 0;       // we're doing nothing
+    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
+    public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
 }

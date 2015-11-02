@@ -3,28 +3,21 @@ package activeng.pt.activenglab;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,19 +28,25 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 3;
 
     private BluetoothAdapter mBluetoothAdapter = null;
-    private BluetoothChatService mChatService = null;
+    private static BluetoothChatService mChatService = null;
     private String mConnectedDeviceName = null;
     private String mConnectedDeviceAddress = null;
 
-    private Switch switcha = null;
+    private BroadcastReceiver conn2BTService;
+    private boolean registered = false;
+
+    private static Switch bt_switch = null;
+    private static boolean bt_switch_listener_enabled = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("Life cyle", "MainActivity onCreate");
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.maintoolbar);
         setSupportActionBar(toolbar);
+
         // show the app icon
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
@@ -63,14 +62,18 @@ public class MainActivity extends AppCompatActivity {
         });
         */
 
-        /*
-                Comentar para desativar Bluetooth
-         */
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Log.d("ActivEng", String.format("Nome do dispositivo: %s", mBluetoothAdapter.getName()));
+        Log.d("ActivEng", String.format("Nome bluetooth do dispositivo Android: %s", mBluetoothAdapter.getName()));
 
-
+        // BroadcastReceiver is the same for LocalBroadcast or global Broadcast
+        conn2BTService = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle extras = intent.getExtras();
+                Log.d("ActivEng", "MainActivity --> onReceive");
+            }
+        };
     }
 
     @Override
@@ -80,20 +83,28 @@ public class MainActivity extends AppCompatActivity {
 
         MenuItem menuItem = menu.findItem(R.id.myswitch);
         View view = MenuItemCompat.getActionView(menuItem);
-        switcha = (Switch) view.findViewById(R.id.switchForActionBar);
-        switcha.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        bt_switch = (Switch) view.findViewById(R.id.switchForActionBar);
+
+        bt_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Intent serverIntent = new Intent(getApplicationContext(), DeviceListActivity.class);
-                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-                } else {
-                    if (mChatService != null) {
-                        mChatService.stop();
+                if (bt_switch_listener_enabled) {
+                    if (isChecked) {
+                        if (mChatService != null && (mChatService.getState() != Constants.STATE_CONNECTED && mChatService.getState() != Constants.STATE_CONNECTING)) {
+                            Intent serverIntent = new Intent(getApplicationContext(), DeviceListActivity.class);
+                            startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+                        }
+                    } else {
+                        if (mChatService != null) {
+                            Log.d("Life cyle", "mChatService.stop()");
+                            mChatService.stop();
+                        }
                     }
+                    Log.d("Life cyle", "Switch onCheckedChanged");
+                } else {
+                    Log.d("Life cyle", "Switch onCheckedChanged: nothing todo");
                 }
-                Log.d("Life cyle", "New Switch");
             }
         });
         return true;
@@ -105,120 +116,92 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         if (id == R.id.action_settings) {
             //Toast toast = Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT);
             //toast.show();
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
-
         switch (id) {
             case R.id.action_settings:
                 //Toast toast = Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT);
                 //toast.show();
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
-
             case R.id.myswitch:
                 Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
                 toast.show();
                 Log.d("Life cyle", "Switch");
                 return true;
-            /*
-            case R.id.secure_connect_scan:
-                //Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
-                //toast.show();
-
-                Intent serverIntent = new Intent(this, DeviceListActivity.class);
-                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-
-                return true;
-            case R.id.disconnect:
-                //Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
-                //toast.show();
-                if (mChatService != null) {
-                    mChatService.stop();
-                }
-                return true;
-            */
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.d("Life cyle", "--> MainActivity onSaveInstanceState");
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Always call the superclass so it can restore the view hierarchy
-        super.onRestoreInstanceState(savedInstanceState);
-        // Restore state members from saved instance
-        Log.d("Life cyle", "<-- MainActivity onRestoreInstanceState");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();  // Always call the superclass method first
-        Log.d("Life cyle", "MainActivity onResume");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();  // Always call the superclass method first
-        Log.d("Life cyle", "MainActivity onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();  // Always call the superclass method first
-        Log.d("Life cyle", "MainActivity onStop");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();  // Always call the superclass method first
-        Log.d("Life cyle", "MainActivity onRestart");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();  // Always call the superclass
-        Log.d("Life cyle", "MainActivity onDestroy");
-    }
+    //11-01 17:04:44.411 29446-29446/activeng.pt.activenglab D/Life cyle: MainActivity onCreate
+    //11-01 17:04:44.449 29446-29446/activeng.pt.activenglab D/ActivEng: Nome bluetooth do dispositivo Android: thl 5000
+    //        11-01 17:04:44.451 29446-29446/activeng.pt.activenglab D/Life cyle: MainActivity onStart
+    //11-01 17:04:44.452 29446-29446/activeng.pt.activenglab D/ActivEng: setupChat()
+    //11-01 17:04:44.452 29446-29446/activeng.pt.activenglab D/Life cyle: MainActivity onResume
 
     @Override
     protected void onStart() {
+        int state;
         super.onStart();  // Always call the superclass method first
         Log.d("Life cyle", "MainActivity onStart");
 
-        /*
-                Comentar para desativar Bluetooth
-         */
         // If BT is not on, request that it be enabled.
         // setupChat() will then be called during onActivityResult
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             // Otherwise, setup the chat session
-        } else if (mChatService == null) {
-            setupChat();
+        } else {
+            if (mChatService == null) {
+                setupChat();
+            } else {
+                state = mChatService.getState();
+                //public static final int STATE_NONE = 0;       // we're doing nothing
+                //public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+                //public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
+                //public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+                switch (state) {
+                    case Constants.STATE_LISTEN:
+                        Log.d("ActivEng", "MainActivity onStart(): BluetoothChatService: STATE_LISTEN");
+                        break;
+                    case Constants.STATE_CONNECTING:
+                        Log.d("ActivEng", "MainActivity onStart(): BluetoothChatService: STATE_CONNECTING");
+                        break;
+                    case Constants.STATE_NONE:
+                        Log.d("ActivEng", "MainActivity onStart(): BluetoothChatService: STATE_NONE");
+                        break;
+                    case Constants.STATE_CONNECTED:
+                        //bt_switch.setChecked(true);
+                        Log.d("ActivEng", "MainActivity onStart(): BluetoothChatService: STATE_CONNECTED");
+                        break;
+                }
+            }
         }
+    }
 
+    public void getArduinoMetadata() {
+        // syncronize clocks
+        String message = "M";
+        Log.d("ActivEng", "Get metadata: " + message);
+        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        //this.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public void syncronizeTime() {
         // syncronize clocks
-        String message = "T|" + System.currentTimeMillis()/1000;
+        String message = "T|" + System.currentTimeMillis() / 1000;
         Log.d("ActivEng", "Set time: " + message);
         Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        this.sendBroadcast(intent);
+        //this.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    /*
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -231,7 +214,8 @@ public class MainActivity extends AppCompatActivity {
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             //mConversationArrayAdapter.clear();
                             Log.d("ActivEng", "BluetoothChatService.STATE_CONNECTED");
-                            syncronizeTime();
+                            getArduinoMetadata();
+                            //syncronizeTime();
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             //setStatus(R.string.title_connecting);
@@ -278,37 +262,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+    */
 
     private void setupChat() {
         Log.d("ActivEng", "setupChat()");
-
-        //// Initialize the array adapter for the conversation thread
-        //mConversationArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.message);
-        //
-        //mConversationView.setAdapter(mConversationArrayAdapter);
-        //
-        //// Initialize the compose field with a listener for the return key
-        //mOutEditText.setOnEditorActionListener(mWriteListener);
-        //
-        //// Initialize the send button with a listener that for click events
-        //mSendButton.setOnClickListener(new View.OnClickListener() {
-        //    public void onClick(View v) {
-        //        // Send a message using content of the edit text widget
-        //        View view = getView();
-        //        if (null != view) {
-        //            TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
-        //            String message = textView.getText().toString();
-        //            sendMessage(message);
-        //        }
-        //    }
-        //});
-
         // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothChatService(this, mHandler);
-        //mChatService = new BluetoothChatService(this);
-
-        // Initialize the buffer for outgoing messages
-        //mOutStringBuffer = new StringBuffer("");
+        // mChatService = new BluetoothChatService(this, mHandler);
+        mChatService = new BluetoothChatService(this);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -319,9 +279,7 @@ public class MainActivity extends AppCompatActivity {
                     connectDevice(data, true);
                 }
                 if (resultCode == Activity.RESULT_CANCELED) {
-                    // TODO
-                    // voltar a por o switch button a off
-                    switcha.setChecked(false);
+                    bt_switch.setChecked(false);
                     Log.d("ActivEng", "resultCode" + resultCode);
                 }
                 break;
@@ -345,12 +303,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Establish connection with other divice
-     *
-     * @param data   An {@link Intent} with {@link DeviceListActivity#EXTRA_DEVICE_ADDRESS} extra.
-     * @param secure Socket Security type - Secure (true) , Insecure (false)
-     */
     private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
         String address = data.getExtras()
@@ -361,4 +313,109 @@ public class MainActivity extends AppCompatActivity {
         mChatService.connect(device, secure);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d("Life cyle", "--> MainActivity onSaveInstanceState");
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore state members from saved instance
+        Log.d("Life cyle", "<-- MainActivity onRestoreInstanceState");
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        Log.d("ActivEng", "MainActivity onPrepareOptionsMenu");
+
+        if (mChatService != null && (mChatService.getState() == Constants.STATE_CONNECTED || mChatService.getState() == Constants.STATE_CONNECTING)) {
+            bt_switch.setChecked(true);
+        }
+
+        //swtService.setChecked(ServiceHelper.isServiceStarted(this, MySystemService.class.getName()));
+        return true;
+    }
+
+    @Override
+    public void onResume() {
+        int state;
+        super.onResume();  // Always call the superclass method first
+        invalidateOptionsMenu();
+        Log.d("Life cyle", "MainActivity onResume");
+
+        if (mChatService != null) {
+            state = mChatService.getState();
+            //public static final int STATE_NONE = 0;       // we're doing nothing
+            //public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+            //public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
+            //public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+            switch (state) {
+                case Constants.STATE_LISTEN:
+                    Log.d("ActivEng", "MainActivity onResume(): BluetoothChatService: STATE_LISTEN");
+                    break;
+                case Constants.STATE_CONNECTING:
+                    Log.d("ActivEng", "MainActivity onResume(): BluetoothChatService: STATE_CONNECTING");
+                    break;
+                case Constants.STATE_NONE:
+                    Log.d("ActivEng", "MainActivity onResume(): BluetoothChatService: STATE_NONE");
+                    break;
+                case Constants.STATE_CONNECTED:
+                    //if (bt_switch != null) {
+                    //    bt_switch_listener_enabled = false;
+                    //    bt_switch.setChecked(true);
+                    //    bt_switch_listener_enabled = true;
+                    //    Log.d("ActivEng", "MainActivity onResume(): bt_switch.setChecked(false and true) ;");
+                    //} else {
+                    //    Log.d("ActivEng", "MainActivity onResume(): bt_switch == null ;");
+                    //}
+                    Log.d("ActivEng", "MainActivity onResume(): BluetoothChatService: STATE_CONNECTED");
+                    break;
+            }
+        }
+
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+
+        IntentFilter bt_fail = new IntentFilter(Constants.MESSAGE_BT_FAIL);
+        IntentFilter bt_state_change = new IntentFilter(Constants.MESSAGE_BT_STATE_CHANGE);
+        IntentFilter metadata = new IntentFilter(Constants.MESSAGE_METADATA);
+        IntentFilter sensormetadata = new IntentFilter(Constants.MESSAGE_SENSORMETADATA);
+        manager.registerReceiver(this.conn2BTService, bt_fail);
+        manager.registerReceiver(this.conn2BTService, bt_state_change);
+        manager.registerReceiver(this.conn2BTService, metadata);
+        manager.registerReceiver(this.conn2BTService, sensormetadata);
+        registered = true;
+    }
+
+    @Override
+    public void onPause() {
+        if (registered) {
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+            manager.unregisterReceiver(this.conn2BTService);
+        }
+        super.onPause();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onStop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();  // Always call the superclass method first
+        Log.d("Life cyle", "MainActivity onRestart");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();  // Always call the superclass
+        Log.d("Life cyle", "MainActivity onDestroy");
+    }
 }

@@ -72,7 +72,7 @@ public class BluetoothChatService {
 
     // Member fields
     private final BluetoothAdapter mAdapter;
-     private final Handler mHandler;
+     //private final Handler mHandler;
     private AcceptThread mSecureAcceptThread;
     private AcceptThread mInsecureAcceptThread;
     private ConnectThread mConnectThread;
@@ -83,22 +83,22 @@ public class BluetoothChatService {
     private BroadcastReceiver connectionUpdates;
 
     // Constants that indicate the current connection state
-    public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
-    public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
-    public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+    //public static final int STATE_NONE = 0;       // we're doing nothing
+    //public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    //public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
+    //public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
     /**
      * Constructor. Prepares a new BluetoothChat session.
      *
      * @param context The UI Activity Context
      */
-    public BluetoothChatService(Context context, Handler handler) {
-    // public BluetoothChatService(Context context) {
+    //public BluetoothChatService(Context context, Handler handler) {
+    public BluetoothChatService(Context context) {
         mContext = context;
         mAdapter = BluetoothAdapter.getDefaultAdapter();
-        mState = STATE_NONE;
-        mHandler = handler;
+        mState = Constants.STATE_NONE;
+        //mHandler = handler;
 
         connectionUpdates = new BroadcastReceiver() {
             @Override
@@ -125,10 +125,12 @@ public class BluetoothChatService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-         mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        // mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
 
         Intent intent = new Intent(Constants.MESSAGE_BT_STATE_CHANGE).putExtra(Intent.EXTRA_TEXT, state);
-        mContext.sendBroadcast(intent);
+        //mContext.sendBroadcast(intent);
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+        manager.sendBroadcast(intent);
     }
 
     /**
@@ -157,7 +159,7 @@ public class BluetoothChatService {
             mConnectedThread = null;
         }
 
-        setState(STATE_LISTEN);
+        setState(Constants.STATE_LISTEN);
 
         // Start the thread to listen on a BluetoothServerSocket
         if (mSecureAcceptThread == null) {
@@ -180,7 +182,7 @@ public class BluetoothChatService {
         Log.d(TAG, "connect to: " + device);
 
         // Cancel any thread attempting to make a connection
-        if (mState == STATE_CONNECTING) {
+        if (mState == Constants.STATE_CONNECTING) {
             if (mConnectThread != null) {
                 mConnectThread.cancel();
                 mConnectThread = null;
@@ -196,7 +198,7 @@ public class BluetoothChatService {
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device, secure);
         mConnectThread.start();
-        setState(STATE_CONNECTING);
+        setState(Constants.STATE_CONNECTING);
     }
 
     /**
@@ -237,23 +239,27 @@ public class BluetoothChatService {
 
         // Send the name of the connected device back to the UI Activity
 
-        Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
-        Bundle bundle = new Bundle();
-        bundle.putString(Constants.DEVICE_NAME, device.getName());
-        bundle.putString(Constants.DEVICE_ADRESS, device.getAddress());
-        msg.setData(bundle);
-        mHandler.sendMessage(msg);
+        //Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
+        //Bundle bundle = new Bundle();
+        //bundle.putString(Constants.DEVICE_NAME, device.getName());
+        //bundle.putString(Constants.DEVICE_ADRESS, device.getAddress());
+        //msg.setData(bundle);
+        //mHandler.sendMessage(msg);
 
         //Intent intent = new Intent(Constants.MESSAGE_BT_NAME).putExtra(Intent.EXTRA_TEXT, device.getName());
         //mContext.sendBroadcast(intent);
 
-
-        Log.d("ActivEng", "CalibrationActivityFragment registerReceiver onResume()");
-        mContext.getApplicationContext().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TO_ARDUINO));
+        Log.d("ActivEng", "BluetoothChatService BroadcastReceiver versus LocalBroadcastReceiver");
+        //mContext.getApplicationContext().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TO_ARDUINO));
+        //
+        //LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+        //LocalBroadcastManager.getInstance(mContext.getApplicationContext()).registerReceiver(this.connectionUpdates,
+        //        new IntentFilter(Constants.MESSAGE_TO_ARDUINO));
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+        IntentFilter filter = new IntentFilter(Constants.MESSAGE_TO_ARDUINO);
+        manager.registerReceiver(this.connectionUpdates, filter);
         registered = true;
-
-        setState(STATE_CONNECTED);
-
+        setState(Constants.STATE_CONNECTED);
     }
 
     /**
@@ -281,11 +287,14 @@ public class BluetoothChatService {
             mInsecureAcceptThread.cancel();
             mInsecureAcceptThread = null;
         }
-        setState(STATE_NONE);
+        setState(Constants.STATE_NONE);
 
         Log.d("ActivEng", "BluetoothChatService unregisterReceiver stop()");
         if (registered) {
-            mContext.getApplicationContext().unregisterReceiver(this.connectionUpdates);
+            //mContext.getApplicationContext().unregisterReceiver(this.connectionUpdates);
+            //LocalBroadcastManager.getInstance(mContext.getApplicationContext()).unregisterReceiver(this.connectionUpdates);
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(mContext);
+            manager.unregisterReceiver(this.connectionUpdates);
             registered = false;
         }
 
@@ -308,7 +317,7 @@ public class BluetoothChatService {
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
         synchronized (this) {
-            if (mState != STATE_CONNECTED) return;
+            if (mState != Constants.STATE_CONNECTED) return;
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
@@ -331,7 +340,8 @@ public class BluetoothChatService {
         */
 
         Intent intent = new Intent(Constants.MESSAGE_BT_FAIL).putExtra(Intent.EXTRA_TEXT, "Unable to connect device");
-        mContext.sendBroadcast(intent);
+        //mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
 
         // Start the service over to restart listening mode
         BluetoothChatService.this.start();
@@ -352,7 +362,8 @@ public class BluetoothChatService {
         */
 
         Intent intent = new Intent(Constants.MESSAGE_BT_FAIL).putExtra(Intent.EXTRA_TEXT, "Device connection was lost");
-        mContext.sendBroadcast(intent);
+        //mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
 
         // Start the service over to restart listening mode
         BluetoothChatService.this.start();
@@ -395,7 +406,7 @@ public class BluetoothChatService {
             BluetoothSocket socket = null;
 
             // Listen to the server socket if we're not connected
-            while (mState != STATE_CONNECTED) {
+            while (mState != Constants.STATE_CONNECTED) {
                 try {
                     // This is a blocking call and will only return on a
                     // successful connection or an exception
@@ -409,14 +420,14 @@ public class BluetoothChatService {
                 if (socket != null) {
                     synchronized (BluetoothChatService.this) {
                         switch (mState) {
-                            case STATE_LISTEN:
-                            case STATE_CONNECTING:
+                            case Constants.STATE_LISTEN:
+                            case Constants.STATE_CONNECTING:
                                 // Situation normal. Start the connected thread.
                                 connected(socket, socket.getRemoteDevice(),
                                         mSocketType);
                                 break;
-                            case STATE_NONE:
-                            case STATE_CONNECTED:
+                            case Constants.STATE_NONE:
+                            case Constants.STATE_CONNECTED:
                                 // Either not ready or already connected. Terminate new socket.
                                 try {
                                     socket.close();
@@ -570,15 +581,18 @@ public class BluetoothChatService {
                                 switch (temp.charAt(0)) {
                                     case 'R':
                                         intent = new Intent(Constants.MESSAGE_TEMPERATURE).putExtra(Intent.EXTRA_TEXT, temp);
-                                        mContext.sendBroadcast(intent);
+                                        //mContext.sendBroadcast(intent);
+                                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     case 'M':
                                         intent = new Intent(Constants.MESSAGE_METADATA).putExtra(Intent.EXTRA_TEXT, temp);
-                                        mContext.sendBroadcast(intent);
+                                        //mContext.sendBroadcast(intent);
+                                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     case 'S':
                                         intent = new Intent(Constants.MESSAGE_SENSORMETADATA).putExtra(Intent.EXTRA_TEXT, temp);
-                                        mContext.sendBroadcast(intent);
+                                        //mContext.sendBroadcast(intent);
+                                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     default:
                                         break;

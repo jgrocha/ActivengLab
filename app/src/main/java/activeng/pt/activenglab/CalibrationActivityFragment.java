@@ -5,10 +5,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,15 +16,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-
-import com.jjoe64.graphview.series.DataPoint;
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
@@ -33,7 +24,9 @@ import activeng.pt.activenglab.data.TemperatureContract;
  */
 public class CalibrationActivityFragment extends Fragment implements OnClickListener {
 
-    BroadcastReceiver connectionUpdates;
+    private BroadcastReceiver conn2BTService;
+    private boolean registered = false;
+
     private EditText cal_current_read;
     private EditText cal_new_read;
 
@@ -65,7 +58,8 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         EditText cal_current_offset = (EditText) rootView.findViewById(R.id.cal_current_offset);
         EditText cal_current_gain = (EditText) rootView.findViewById(R.id.cal_current_gain);
 
-        connectionUpdates = new BroadcastReceiver() {
+        // BroadcastReceiver is the same for LocalBroadcast or global Broadcast
+        conn2BTService = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 double newcal;
@@ -114,9 +108,9 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         String message = "C|" + sensorId + "|" + cal_a_new + "|" + cal_b_new;
         //Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, "T1445177600");
         Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        getActivity().sendBroadcast(intent);
-        // TODO
-        // save calibration on local sqlite database
+        //getActivity().sendBroadcast(intent);
+        // new
+        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
         // update sensor
         ContentValues updatedValues = new ContentValues();
         updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, cal_a_new);
@@ -131,6 +125,7 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         ////Date date = new Date(System.currentTimeMillis());
         //Date date = new Date();
 
+        // save calibration on local sqlite database
         ContentValues novosValues = new ContentValues();
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_SENSORID, sensorId);
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_ADDRESS, address);
@@ -158,9 +153,6 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_HIGH, cal_read_high);
         novosValues.put(TemperatureContract.CalibrationEntry.COLUMN_READ_VALUE_LOW, cal_read_low);
         mNewUri = getActivity().getContentResolver().insert(TemperatureContract.CalibrationEntry.CONTENT_URI, novosValues);
-        // TODO
-        // close this activity
-        getActivity().onBackPressed();
     }
 
     private void computeCalibration(View rootView) {
@@ -211,6 +203,8 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
                     // TODO
                     // enable or disable SAVE button
                     saveCalibration(rootView);
+                    // close this activity
+                    ((CalibrationActivity) getActivity()).done();
                 }
                 break;
             default:
@@ -222,13 +216,25 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     public void onResume() {
         super.onResume();
         Log.d("ActivEng", "CalibrationActivityFragment registerReceiver onResume()");
-        getActivity().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
+        // old global broadcast receiver
+        //getActivity().registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
+        // new
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+        IntentFilter filter = new IntentFilter(Constants.MESSAGE_TEMPERATURE);
+        manager.registerReceiver(this.conn2BTService, filter);
+        registered = true;
     }
 
     @Override
     public void onPause() {
         Log.d("ActivEng", "CalibrationActivityFragment unregisterReceiver onPause()");
-        getActivity().unregisterReceiver(this.connectionUpdates);
+        // old global broadcast receiver
+        //getActivity().unregisterReceiver(this.conn2BTService);
+        // new
+        if (registered) {
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+            manager.unregisterReceiver(this.conn2BTService);
+        }
         super.onPause();
     }
 }

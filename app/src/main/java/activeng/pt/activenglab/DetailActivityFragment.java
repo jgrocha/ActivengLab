@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,6 +52,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     private LineGraphSeries<DataPoint> series;
 
     BroadcastReceiver connectionUpdates;
+    private boolean registered;
+
     private EditText etCurrentRead;
 
     private final NumberFormat f = NumberFormat.getInstance();
@@ -104,14 +107,19 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
                             currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
                     if (temp != null) {
                         etCurrentRead.setText( temp.getString() );
-                        Log.d("ActivEng", "d5 " + temp.getMillis());
-                        series.appendData(new DataPoint(new Date(temp.getMillis()), temp.getValue()), true, 40);
+                        // TODO
+                        // Create the graph only after we have enougth data.
+                        // Log.d("ActivEng", "d5 " + temp.getMillis());
+                        // series.appendData(new DataPoint(new Date(temp.getMillis()), temp.getValue()), true, 40);
                     }
                 }
             }
         };
 
         // generate Dates
+        // TODO
+        // Get data from RTD for some time, to show the graph
+        // The graph will only show after a few moments...
         Calendar calendar = Calendar.getInstance();
 
         calendar.add(Calendar.SECOND, -30);
@@ -226,13 +234,20 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         super.onResume();
 
         Log.d("ActivEng", "DetailActivityFragment registerReceiver");
-        getActivity().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
-
+        //getActivity().registerReceiver(this.connectionUpdates, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+        IntentFilter filter = new IntentFilter(Constants.MESSAGE_TEMPERATURE);
+        manager.registerReceiver(this.connectionUpdates, filter);
+        registered = true;
     }
 
     @Override
     public void onPause() {
-        getActivity().unregisterReceiver(this.connectionUpdates);
+        if (registered) {
+            //getActivity().unregisterReceiver(this.connectionUpdates);
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+            manager.unregisterReceiver(this.connectionUpdates);
+        }
         super.onPause();
     }
 

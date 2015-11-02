@@ -31,36 +31,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         myItemSensorCursorAdapter = new ItemSensorCursorAdapter(getActivity(), null, 0);
 
-        //Cursor cursor = getContext().getContentResolver().query(TemperatureContract.SensorEntry.CONTENT_URI, null, null, null, null);
-        //int count = 0;
-        //while (cursor.moveToNext()) {
-        //    long sensorId = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
-        //    String location = cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_LOCATION));
-        //    String sensorType = cursor.getString(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
-        //    Log.d("SQLite3", "Linha " + count + ": _ID: " + sensorId + " Location: " + location + " Type: " + sensorType);
-        //    count++;
-        //}
-        //Log.d("SQLite3", "Com " + count + " linhas.");
-        //// cursor.close();
-        //
-        //// Create some dummy data for the ListView.  Here's a sample weekly forecast
-        //String[] data = {
-        //        "Sensor 1 - Carnaxide, Portugal - 31/17",
-        //        "Sensor 2 - Carnaxide, Portugal - 21/8",
-        //        "Sensor 3 - Sofarimex - 22/13"
-        //};
-        //List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
-        //
-        //// Now that we have some dummy forecast data, create an ArrayAdapter.
-        //// The ArrayAdapter will take data from a source (like our dummy forecast) and
-        //// use it to populate the ListView it's attached to.
-        //myItemSensorCursorAdapter =
-        //        new ArrayAdapter<String>(
-        //                getActivity(), // The current context (this activity)
-        //                R.layout.list_item_forecast, // The name of the layout ID.
-        //                R.id.list_item_forecast_textview, // The ID of the textview to populate.
-        //                weekForecast);
-
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         // Get a reference to the ListView, and attach this adapter to it.
@@ -86,7 +56,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 }
             }
         });
-
         return rootView;
     }
 

@@ -23,4 +23,7 @@ public class CalibrationActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    public void done() {
+        super.onBackPressed();
+    }
 }
