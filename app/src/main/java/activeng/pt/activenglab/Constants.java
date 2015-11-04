@@ -47,4 +47,9 @@ public interface Constants {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
+    public static final String EXTRA_MSG_TEMP = "activeng.extra.msg.temp";
+    public static final String EXTRA_MSG_TEMP_STR = "activeng.extra.msg.temp.str";
+    public static final String EXTRA_MSG_TEMP_SENSOR = "activeng.extra.msg.temp.sensor";
+    public static final String EXTRA_MSG_TEMP_MILLIS = "activeng.extra.msg.temp.millis";
+
 }

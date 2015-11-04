@@ -41,10 +41,11 @@ public class UtilitySingleton {
 
     private final NumberFormat f = NumberFormat.getInstance();
 
-    private UtilitySingleton(){}
+    private UtilitySingleton() {
+    }
 
-    public void init(Context context){
-        if(appContext == null){
+    public void init(Context context) {
+        if (appContext == null) {
             appContext = context;
         }
         if (f instanceof DecimalFormat) {
@@ -53,15 +54,15 @@ public class UtilitySingleton {
             f.setMinimumFractionDigits(2);
             DecimalFormatSymbols custom = new DecimalFormatSymbols();
             custom.setDecimalSeparator('.');
-            ((DecimalFormat)f).setDecimalFormatSymbols(custom);
+            ((DecimalFormat) f).setDecimalFormatSymbols(custom);
         }
     }
 
-    private Context getContext(){
+    private Context getContext() {
         return appContext;
     }
 
-    public static Context get(){
+    public static Context get() {
         return getInstance().getContext();
     }
 
@@ -79,7 +80,7 @@ public class UtilitySingleton {
         return f.format(temperature);
     }
 
-    public void saveTemperature(double temperature, int sensorId, String address, long epoch) {
+    public void saveTemperature(Context mContext, double temperature, long sensorId, String address, long epoch) {
         Uri mNewUri;
 
         //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -95,13 +96,14 @@ public class UtilitySingleton {
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);
 
-        mNewUri = appContext.getContentResolver().insert(
+        mNewUri = mContext.getContentResolver().insert(
                 TemperatureContract.TemperatureEntry.CONTENT_URI,   // the user dictionary content URI
                 novosValues                          // the values to insert
         );
+
     }
 
-    public Temperature processMessage(String message, int sensorId, String address) {
+    public Temperature processAndSaveMessage(Context mContext, String message, String address) {
         long sensor;
         Double t;
         long instant;
@@ -113,47 +115,49 @@ public class UtilitySingleton {
         //parts[3] = "1445279973"; // seconds, not milliseconds
         //Log.d("ActivEng", message);
         assert (message.charAt(0) == 'R');
-        assert (sensorId != 0);
         sensor = Integer.parseInt(parts[1]);
-        if (sensorId == sensor) {
-            try {
-                t = Double.parseDouble(parts[2]);
-                instant = Long.parseLong(parts[3]);
-            } catch (NumberFormatException e) {
-                t = 0.0d;
-                instant = 0;
-            }
-            saveTemperature(t, sensorId, address, instant);
-            // TODO: number of decimals places
-            return new Temperature(t, formatTemperature(t, 2), instant);
-        } else {
-            return null;
+        try {
+            t = Double.parseDouble(parts[2]);
+            instant = Long.parseLong(parts[3]);
+        } catch (NumberFormatException e) {
+            t = 0.0d;
+            instant = 0;
         }
+        saveTemperature(mContext, t, sensor, address, instant);
+        // TODO: number of decimals places
+        return new Temperature(t, formatTemperature(t, 2), sensor, instant);
     }
+
 }
 
 final class Temperature {
     private final double value;
     private final String str;
     //private final Date datetime;
+    private final long sensor;
     private final long millis;
 
-    public Temperature(double first, String second, long dt) {
-        this.value = first;
-        this.str = second;
+    public Temperature(double temperature, String temperatureStr, long sensor, long dt) {
+        this.value = temperature;
+        this.str = temperatureStr;
+        this.sensor = sensor;
         //this.datetime = new Date(dt);
-        this.millis = dt*1000;
+        this.millis = dt * 1000;
     }
 
-    public double getValue() {
+    public double getRead() {
         return value;
     }
 
-    public String getString() {
+    public String getReadString() {
         return str;
     }
 
-    public long getMillis() {
+    public long getReadSensor() {
+        return sensor;
+    }
+
+    public long getReadMillis() {
         return millis;
     }
 }

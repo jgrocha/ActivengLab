@@ -99,14 +99,20 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         connectionUpdates = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                double temp;
+                String tempStr;
+                long sensor, instant;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "DetailActivityFragment --> onReceive");
                 if (extras != null) {
-                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT),
-                            currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID),
-                            currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
-                    if (temp != null) {
-                        etCurrentRead.setText( temp.getString() );
+
+                    temp = extras.getDouble(Constants.EXTRA_MSG_TEMP, -999);
+                    tempStr = extras.getString(Constants.EXTRA_MSG_TEMP_STR);
+                    sensor = extras.getLong(Constants.EXTRA_MSG_TEMP_SENSOR, 0);
+                    instant = extras.getLong(Constants.EXTRA_MSG_TEMP_MILLIS, 0);
+
+                    if (sensor == currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
+                        etCurrentRead.setText( tempStr );
                         // TODO
                         // Create the graph only after we have enougth data.
                         // Log.d("ActivEng", "d5 " + temp.getMillis());

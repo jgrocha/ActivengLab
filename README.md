@@ -227,11 +227,21 @@ http://www.androprogrammer.com/2013/10/database-demo-database-operations-with_13
 
 ### Communication between BluetoothChatService and Activities and Fragments
 
+Possibilities:
+
 * Handlers
 * Broadcast sender and receivers (using Intents).
 * [Local Broadcast](http://stackoverflow.com/questions/25246185/what-is-more-efficient-broadcast-receiver-or-handler/25246377#25246377) sender and receivers (using Intents)
 ** Local Broadcast has a [sendBroadcastSync](http://developer.android.com/reference/android/support/v4/content/LocalBroadcastManager.html)
 * [EventBus](https://github.com/greenrobot/EventBus) seems a good alternative
+
+Communication used
+
+* Local Broadcast
+
+Further reading:
+
+* http://codetheory.in/android-broadcast-receivers/
 
 ### Convertions: String versus Double
 

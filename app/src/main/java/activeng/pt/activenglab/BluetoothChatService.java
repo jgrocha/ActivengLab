@@ -82,6 +82,9 @@ public class BluetoothChatService {
 
     private BroadcastReceiver connectionUpdates;
 
+    private String deviceName;
+    private String deviceAddress;
+
     // Constants that indicate the current connection state
     //public static final int STATE_NONE = 0;       // we're doing nothing
     //public static final int STATE_LISTEN = 1;     // now listening for incoming connections
@@ -237,6 +240,9 @@ public class BluetoothChatService {
         mConnectedThread = new ConnectedThread(socket, socketType);
         mConnectedThread.start();
 
+        deviceName = device.getName();
+        deviceAddress = device.getAddress();
+
         // Send the name of the connected device back to the UI Activity
 
         //Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
@@ -287,6 +293,9 @@ public class BluetoothChatService {
             mInsecureAcceptThread.cancel();
             mInsecureAcceptThread = null;
         }
+
+        deviceName = "";
+        deviceAddress = "";
         setState(Constants.STATE_NONE);
 
         Log.d("ActivEng", "BluetoothChatService unregisterReceiver stop()");
@@ -580,8 +589,14 @@ public class BluetoothChatService {
                             if (temp.length()>1) {
                                 switch (temp.charAt(0)) {
                                     case 'R':
-                                        intent = new Intent(Constants.MESSAGE_TEMPERATURE).putExtra(Intent.EXTRA_TEXT, temp);
-                                        //mContext.sendBroadcast(intent);
+                                        Temperature tempObj = UtilitySingleton.getInstance().processAndSaveMessage(mContext, temp, deviceAddress);
+
+                                        intent = new Intent(Constants.MESSAGE_TEMPERATURE);
+                                        intent.putExtra(Constants.EXTRA_MSG_TEMP, tempObj.getRead());
+                                        intent.putExtra(Constants.EXTRA_MSG_TEMP_STR, tempObj.getReadString());
+                                        intent.putExtra(Constants.EXTRA_MSG_TEMP_SENSOR, tempObj.getReadSensor());
+                                        intent.putExtra(Constants.EXTRA_MSG_TEMP_MILLIS, tempObj.getReadMillis());
+
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     case 'M':

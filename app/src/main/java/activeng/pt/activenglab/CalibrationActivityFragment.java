@@ -62,16 +62,25 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         conn2BTService = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                double temp;
+                String tempStr;
+                long sensor, instant;
                 double newcal;
                 Bundle extras = intent.getExtras();
                 Log.d("ActivEng", "CalibrationActivityFragment --> onReceive");
                 if (extras != null) {
-                    Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId, address);
-                    if (temp != null) {
-                        cal_current_read.setText(temp.getString());
+
+                    //Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId, address);
+                    temp = extras.getDouble(Constants.EXTRA_MSG_TEMP, -999);
+                    tempStr = extras.getString(Constants.EXTRA_MSG_TEMP_STR);
+                    sensor = extras.getLong(Constants.EXTRA_MSG_TEMP_SENSOR, 0);
+                    instant = extras.getLong(Constants.EXTRA_MSG_TEMP_MILLIS, 0);
+
+                    if (sensor == currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
+                        cal_current_read.setText(tempStr);
 
                         if (cal_a_new != Double.MAX_VALUE && cal_b_new != Double.MAX_VALUE) {
-                            newcal = cal_a_new + temp.getValue() * cal_b_new;
+                            newcal = cal_a_new + temp * cal_b_new;
                             cal_new_read.setText(UtilitySingleton.getInstance().formatTemperature(newcal, 2));
                         } else {
                             cal_new_read.setText("");
