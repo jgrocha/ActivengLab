@@ -26,6 +26,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
@@ -84,14 +85,13 @@ public class UtilitySingleton {
         Uri mNewUri;
 
         //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        //Date date = new Date(epoch*1000);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Date dateOn = new Date(epoch*1000);
 
         ContentValues novosValues = new ContentValues();
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_SENSORID, sensorId);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_ADDRESS, address);
-        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, System.currentTimeMillis()/1000);
-        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, "datetime(" + epoch + ", 'unixepoch')" );
-        //novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(date) );
+        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(dateOn) );
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_VALUE, temperature);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
         novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);

@@ -299,8 +299,77 @@ String output = nf.format(val);
 
 [Add Google Sign-In to Your Android App](https://developers.google.com/identity/sign-in/android/)
 
+## Date and time
 
-##### Notes
+Unix time, or POSIX time, is a system for describing points in time, defined as the number of 
+seconds elapsed since midnight proleptic Coordinated Universal Time (UTC) of January 1, 1970, 
+not counting leap seconds.
 
-[Type Unicode character](http://askubuntu.com/questions/31258/how-can-i-type-a-unicode-character-for-example-em-dash)
-Compose key: `Crtl-right` Arrow: `Compose key`, `->`
+In Linux:
+```
+$ date +%s
+1446723851
+```
+
+JAVA
+
+```
+long timeMillis = System.currentTimeMillis();
+long timeSeconds = TimeUnit.MILLISECONDS.toSeconds(timeMillis);
+```
+
+Arduino
+
+```
+now() // Returns the current time as seconds since Jan 1 1970
+```
+
+SQLite
+
+[Date And Time Functions](https://www.sqlite.org/lang_datefunc.html)
+
+### Store datetime in SQLite
+
+JAVA System.currentTimeMillis() to Date
+
+```
+SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+// Android time
+Date addedOn = new Date(System.currentTimeMillis());
+// Arduino time
+Date addedOn = new Date(epoch*1000);
+
+novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(dateOn) );
+
+
+```
+
+## Android to Arduino protocol
+
+### Arduino metadata
+
+* header
+* sensor*
+
+### Messages to Arduino
+
+Message | Example
+--------|-----------
+M       | M             | Metadata request
+T       | T1446723851   | Android epoch to ajust the Arduino clock
+I       | I2            | Reading interval (2 sec.)
+P       | P             | Pause readings
+
+### Messages from Arduino
+
+Message | Example
+--------|-----------
+R       | `R|2|147.681|1446723851`
+T       | `T|1446723851`
+T       | `T|1446723851|1446723851` // TODO
+M       | `M|1|3|1445125085`
+S       | `S|1|Rita Rocha|1445122175|PT 100|T|1|1|3|2.738895|1.007828`
+E       | 
+P       | `P|On` ou `P|Off`
+W       | `W|Message not recognized`

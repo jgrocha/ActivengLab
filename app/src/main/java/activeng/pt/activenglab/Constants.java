@@ -35,8 +35,9 @@ public interface Constants {
     public static final String TOAST = "toast";
 
     public static final String MESSAGE_TEMPERATURE = "activeng.pt.activenglab.temperature";
-    public static final String MESSAGE_METADATA = "activeng.pt.activenglab.metadata";
-    public static final String MESSAGE_SENSORMETADATA = "activeng.pt.activenglab.metadata";
+    public static final String MESSAGE_METADATA       = "activeng.pt.activenglab.metadata";
+    public static final String MESSAGE_SENSORMETADATA = "activeng.pt.activenglab.sensor.metadata";
+    public static final String MESSAGE_CLOCK = "activeng.pt.activenglab.sensor.clock";
     public static final String MESSAGE_TO_ARDUINO = "activeng.pt.activenglab.arduino";
     public static final String MESSAGE_BT_STATE_CHANGE = "activeng.pt.activenglab.bluetooth";
     public static final String MESSAGE_BT_NAME = "activeng.pt.activenglab.bluetooth.name";
@@ -46,6 +47,13 @@ public interface Constants {
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+
+    // if STATE_CONNECTED
+    public static final int STATE_PROTOCOL_NONE = 0;            // we're doing nothing
+    public static final int STATE_PROTOCOL_METADATA = 1;        // We send a Metadata request
+    public static final int STATE_PROTOCOL_TIME = 2;            // We send a Time update request to adjust Arduino clock
+    public static final int STATE_PROTOCOL_RECORDING = 3;       // The clock is adjusted and we are recording all temperatures coming
+    public static final int STATE_PROTOCOL_NOTRECORDING = 4;    // The clock is adjusted but we are not recording temperatures
 
     public static final String EXTRA_MSG_TEMP = "activeng.extra.msg.temp";
     public static final String EXTRA_MSG_TEMP_STR = "activeng.extra.msg.temp.str";

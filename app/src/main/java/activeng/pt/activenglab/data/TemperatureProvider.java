@@ -35,6 +35,7 @@ public class TemperatureProvider extends ContentProvider {
     static final int TEMPERATURE = 100;
     static final int SENSOR = 300;
     static final int SENSOR_BY_ID = 301;
+    static final int SENSOR_BY_ID_AND_ADDRESS = 302;
     static final int CALIBRATION = 700;
 
     static final int TEMPERATURE_WITH_LOCATION = 101;
@@ -59,6 +60,7 @@ public class TemperatureProvider extends ContentProvider {
         matcher.addURI(authority, TemperatureContract.PATH_CALIBRATION, CALIBRATION);
 
         matcher.addURI(authority, TemperatureContract.PATH_SENSOR + "/#", SENSOR_BY_ID);
+        matcher.addURI(authority, TemperatureContract.PATH_SENSOR + "/#/*", SENSOR_BY_ID_AND_ADDRESS);
 
         return matcher;
     }
@@ -78,6 +80,8 @@ public class TemperatureProvider extends ContentProvider {
             case SENSOR:
                 return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
             case SENSOR_BY_ID:
+                return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
+            case SENSOR_BY_ID_AND_ADDRESS:
                 return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
             case TEMPERATURE:
                 return TemperatureContract.TemperatureEntry.CONTENT_DIR_TYPE;
@@ -118,6 +122,24 @@ public class TemperatureProvider extends ContentProvider {
                         projection,                 // columns
                         "_id = ?",                  // where filter, with ? for values
                         new String[]{sensorId},     // values for ?
+                        null,                       // groupBy
+                        null,                       // having
+                        sortOrder                   // orderBy
+                );
+                break;
+            }
+            // "sensor/2/30:14:12:18:06:34"
+            case SENSOR_BY_ID_AND_ADDRESS: {
+                String sensorId = TemperatureContract.SensorEntry.getSensorIdFromUri(uri);
+                String sensorAddress = TemperatureContract.SensorEntry.getSensorAddressFromUri(uri);
+
+                Log.d("SQLite3", "sensorId: " + sensorId + " sensorAddress: " + sensorAddress);
+
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        TemperatureContract.SensorEntry.TABLE_NAME,
+                        projection,                                 // columns
+                        "sensorid = ? AND address = ?",            // where filter, with ? for values
+                        new String[]{sensorId, sensorAddress},    // values for ?
                         null,                       // groupBy
                         null,                       // having
                         sortOrder                   // orderBy

@@ -26,9 +26,9 @@ import activeng.pt.activenglab.data.TemperatureContract.CalibrationEntry;
 import activeng.pt.activenglab.data.TemperatureContract.SensorEntry;
 import activeng.pt.activenglab.data.TemperatureContract.TemperatureEntry;
 
-public class TestUpdateSensorData extends AndroidTestCase {
+public class TestQuerySensor extends AndroidTestCase {
 
-    public static final String LOG_TAG = TestUpdateSensorData.class.getSimpleName();
+    public static final String LOG_TAG = TestQuerySensor.class.getSimpleName();
 
     public void deleteAllRecordsFromProvider() {
 
@@ -96,18 +96,33 @@ public class TestUpdateSensorData extends AndroidTestCase {
         //deleteAllRecords();
     }
 
-
-    public void testUpdateSensor() {
+    public void testQuerySensor() {
         // insert our test records into the database
         //TemperatureDbHelper dbHelper = new TemperatureDbHelper(mContext);
         //SQLiteDatabase db = dbHelper.getWritableDatabase();
 
+        ContentValues expectedValues = new ContentValues();
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORID, 1);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_ADDRESS, "30:14:12:18:06:34");
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, "Braga");
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, "2015-10-26 00:07:32");
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, "PT100");
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_METRIC, 1);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, 0);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_QUANTITY, "T");
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, 2.7389);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, 1.00783);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL, 2000);
+        expectedValues.put(TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE, 1);
+
+        //ContentValues existingValues = new ContentValues();
+
         Uri mNewUri;
-        ContentValues existingValues = new ContentValues();
+        mNewUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(1, "30:14:12:18:06:34");
 
         // Test the basic content provider query
         Cursor sensorCursor = mContext.getContentResolver().query(
-                SensorEntry.CONTENT_URI,
+                mNewUri,
                 null,
                 null,
                 null,
@@ -115,25 +130,10 @@ public class TestUpdateSensorData extends AndroidTestCase {
         );
 
         if (sensorCursor.moveToFirst()) {
-            DatabaseUtils.cursorRowToContentValues(sensorCursor, existingValues);
-            long sensorId = existingValues.getAsLong(TemperatureContract.SensorEntry._ID);
-            existingValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, -0.123);
-            existingValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, 0.987);
-
-            int count = mContext.getContentResolver().update(
-                    TemperatureContract.SensorEntry.CONTENT_URI, existingValues, TemperatureContract.SensorEntry._ID + "= ?",
-                    new String[]{Long.toString(sensorId)});
-
-            Cursor newSensorCursor = mContext.getContentResolver().query(
-                    SensorEntry.CONTENT_URI,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+            //DatabaseUtils.cursorRowToContentValues(sensorCursor, existingValues);
 
             // Make sure we get the correct cursor out of the database
-            TestUtilities.validateCursor("testUpdateSensor", newSensorCursor, existingValues);
+            TestUtilities.validateCursor("testQuerySensor", sensorCursor, expectedValues);
 
         }
 

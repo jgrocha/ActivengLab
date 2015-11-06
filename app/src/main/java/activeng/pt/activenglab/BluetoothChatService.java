@@ -78,18 +78,13 @@ public class BluetoothChatService {
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
     private int mState;
+    private int mStateProtocol;
     private Context mContext;
 
     private BroadcastReceiver connectionUpdates;
 
     private String deviceName;
     private String deviceAddress;
-
-    // Constants that indicate the current connection state
-    //public static final int STATE_NONE = 0;       // we're doing nothing
-    //public static final int STATE_LISTEN = 1;     // now listening for incoming connections
-    //public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
-    //public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
     /**
      * Constructor. Prepares a new BluetoothChat session.
@@ -606,6 +601,11 @@ public class BluetoothChatService {
                                         break;
                                     case 'S':
                                         intent = new Intent(Constants.MESSAGE_SENSORMETADATA).putExtra(Intent.EXTRA_TEXT, temp);
+                                        //mContext.sendBroadcast(intent);
+                                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                                        break;
+                                    case 'T':
+                                        intent = new Intent(Constants.MESSAGE_CLOCK).putExtra(Intent.EXTRA_TEXT, temp);
                                         //mContext.sendBroadcast(intent);
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;

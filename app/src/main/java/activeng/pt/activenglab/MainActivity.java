@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
@@ -20,6 +22,12 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import activeng.pt.activenglab.data.TemperatureContract;
+
 public class MainActivity extends AppCompatActivity {
 
     // Intent request codes
@@ -29,14 +37,19 @@ public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBluetoothAdapter = null;
     private static BluetoothChatService mChatService = null;
-    private String mConnectedDeviceName = null;
-    private String mConnectedDeviceAddress = null;
+
+    private String deviceName;
+    private String deviceAddress;
 
     private BroadcastReceiver conn2BTService;
     private boolean registered = false;
 
     private static Switch bt_switch = null;
     private static boolean bt_switch_listener_enabled = true;
+
+    private int numOfSensorsConnected = 0;
+    private int numOfSensorsRegistered = 0;
+    private long timeRequestTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +84,153 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Bundle extras = intent.getExtras();
-                Log.d("ActivEng", "MainActivity --> onReceive");
+                String action = intent.getAction();
+                Log.d("ActivEng", "MainActivity → onReceive → action");
+                switch (action) {
+                    case Constants.MESSAGE_BT_STATE_CHANGE:
+                        handleBtChange(extras);
+                        break;
+                    case Constants.MESSAGE_BT_FAIL:
+                        break;
+                    case Constants.MESSAGE_TEMPERATURE:
+                        break;
+                    case Constants.MESSAGE_METADATA:
+                        handleBtMetadata(extras);
+                        break;
+                    case Constants.MESSAGE_SENSORMETADATA:
+                        handleBtSensorMetadata(extras);
+                        break;
+                    case Constants.MESSAGE_CLOCK:
+                        handleArduinoClock(extras);
+                        break;
+                    default:
+                        Log.d("ActivEng", "MainActivity: unable to handle " + action);
+                }
             }
         };
+    }
+
+    //long requestTime = System.currentTimeMillis();
+
+    private void handleArduinoClock(Bundle extras) {
+        //Log.d("ActivEng", "MainActivity: handleBtMetada");
+        String metadata;
+        if (extras != null) {
+            metadata = extras.getString(Intent.EXTRA_TEXT);
+            Log.d("ActivEng", "MainActivity: handleArduinoClock " + metadata);
+
+            // T|1446723851
+            // T|1446723851|1446723851
+            String[] parts = metadata.split("\\|", -1);
+            long arduino = Long.parseLong(parts[1]); // seconds
+            long delta = System.currentTimeMillis() - timeRequestTime; // milliseconds
+            Log.d("ActivEng", "MainActivity: handleArduinoClock: Difference: " + delta);
+        }
+    }
+
+    private void handleBtSensorMetadata(Bundle extras) {
+        //Log.d("ActivEng", "MainActivity: handleBtMetada");
+        String metadata;
+        if (extras != null) {
+            metadata = extras.getString(Intent.EXTRA_TEXT);
+            Log.d("ActivEng", "MainActivity: handleBtSensorMetadata " + metadata);
+
+            //S|2|Sara Rocha|1445122574|2x 220 Ohm|T|1|1|3|-1.547600|1.001300
+            String[] parts = metadata.split("\\|", -1);
+
+            int id = Integer.parseInt(parts[1]);
+            //deviceAddress
+            String location = parts[2];
+            long installdate = Long.parseLong(parts[3]);
+            String sensortype = parts[4];
+            String quantity = parts[5];
+            int metric = Integer.parseInt(parts[6]);
+            int calibrated = Integer.parseInt(parts[7]);
+            int decimalplaces = Integer.parseInt(parts[8]);
+            double cal_a = Double.parseDouble(parts[9]);
+            double cal_b = Double.parseDouble(parts[10]);
+
+            Uri mNewUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(id, deviceAddress);
+            Cursor sensorCursor = getContentResolver().query(mNewUri, null, null, null, null);
+            if (sensorCursor.moveToFirst()) {
+                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " already exists in database");
+            } else {
+                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " TODO!");
+            }
+
+            numOfSensorsRegistered++;
+            if (numOfSensorsRegistered == numOfSensorsConnected) {
+                syncronizeTime();
+            }
+
+        }
+    }
+
+    private void handleBtMetadata(Bundle extras) {
+        //Log.d("ActivEng", "MainActivity: handleBtMetada");
+        String metadata;
+        if (extras != null) {
+            metadata = extras.getString(Intent.EXTRA_TEXT);
+            Log.d("ActivEng", "MainActivity: handleBtMetadata " + metadata);
+            // M|1|3|1445125085
+            String[] parts = metadata.split("\\|", -1);
+
+            int serial = Integer.parseInt(parts[1]);
+            int numOfSensors =  Integer.parseInt(parts[2]);
+            numOfSensorsConnected = numOfSensors;
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            long epoch =  Long.parseLong(parts[3]);
+            Date matadataDate = new Date(epoch*1000);
+
+            Log.d("ActivEng", "MainActivity: handleBtMetadata: Serial: " + serial + " #ofSensor: " +
+                    numOfSensors + " Date: " + dateFormat.format(matadataDate));
+
+            // and if there is no metadata, or no sensors?
+            String message = "";
+            if (numOfSensors > 0) {
+                message = "S1";
+                for(int i=2; i <= numOfSensors; i++){
+                    message += "\nS" + i;
+                }
+            }
+            // message = "S1\nS2\nS3"; // The last \n is added by BluetoothChatService
+            Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+            //this.sendBroadcast(intent);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+    private void handleBtChange(Bundle extras) {
+        Log.d("ActivEng", "MainActivity: handleBtChange");
+        int btState;
+        if (extras != null) {
+            //Temperature temp = UtilitySingleton.getInstance().processMessage(extras.getString(Intent.EXTRA_TEXT), sensorId, address);
+            btState = extras.getInt(Intent.EXTRA_TEXT);
+            if (btState == Constants.STATE_CONNECTED) {
+                getArduinoMetadata();
+            }
+        }
+    }
+
+    public void getArduinoMetadata() {
+        // syncronize clocks
+        String message = "M";
+        Log.d("ActivEng", "Get metadata: " + message);
+        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        //this.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    public void syncronizeTime() {
+        // syncronize clocks
+        long requestTime = System.currentTimeMillis();
+        timeRequestTime = requestTime;
+        String message = "T|" + requestTime / 1000;
+        Log.d("ActivEng", "Set time: " + message);
+        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        //this.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
@@ -181,24 +338,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    public void getArduinoMetadata() {
-        // syncronize clocks
-        String message = "M";
-        Log.d("ActivEng", "Get metadata: " + message);
-        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        //this.sendBroadcast(intent);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-    public void syncronizeTime() {
-        // syncronize clocks
-        String message = "T|" + System.currentTimeMillis() / 1000;
-        Log.d("ActivEng", "Set time: " + message);
-        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        //this.sendBroadcast(intent);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     /*
@@ -309,6 +448,10 @@ public class MainActivity extends AppCompatActivity {
                 .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+
+        deviceName = device.getName();
+        deviceAddress = device.getAddress();
+
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
@@ -379,15 +522,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-
-        IntentFilter bt_fail = new IntentFilter(Constants.MESSAGE_BT_FAIL);
-        IntentFilter bt_state_change = new IntentFilter(Constants.MESSAGE_BT_STATE_CHANGE);
-        IntentFilter metadata = new IntentFilter(Constants.MESSAGE_METADATA);
-        IntentFilter sensormetadata = new IntentFilter(Constants.MESSAGE_SENSORMETADATA);
-        manager.registerReceiver(this.conn2BTService, bt_fail);
-        manager.registerReceiver(this.conn2BTService, bt_state_change);
-        manager.registerReceiver(this.conn2BTService, metadata);
-        manager.registerReceiver(this.conn2BTService, sensormetadata);
+        manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_BT_FAIL));
+        manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_BT_STATE_CHANGE));
+        manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_METADATA));
+        manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_SENSORMETADATA));
+        manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_CLOCK));
         registered = true;
     }
 

@@ -64,8 +64,16 @@ public class TemperatureContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
+        public static Uri buildSensorIDAddressUri(long id, String address) {
+            //return ContentUris.withAppendedId(CONTENT_URI, id);
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(id)).appendPath(address).build();
+        }
+
         public static String getSensorIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
+        }
+        public static String getSensorAddressFromUri(Uri uri) {
+            return uri.getPathSegments().get(2);
         }
 
     }
