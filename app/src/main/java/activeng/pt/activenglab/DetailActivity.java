@@ -64,7 +64,7 @@ public class DetailActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.detail_action_settings) {
+        if (id == R.id.detail_action_calibration) {
             // Not implemented here
             return false;
         }
@@ -108,4 +108,7 @@ public class DetailActivity extends AppCompatActivity {
         Log.d("Life cyle", "DetailActivity onStart");
     }
 
+    public void done() {
+        super.onBackPressed();
+    }
 }

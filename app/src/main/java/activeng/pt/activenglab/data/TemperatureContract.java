@@ -39,9 +39,9 @@ public class TemperatureContract {
         public static final String COLUMN_LOCATION = "location";
         public static final String COLUMN_INSTALLDATE = "installdate";
         public static final String COLUMN_SENSORTYPE = "sensortype";
+        public static final String COLUMN_QUANTITY = "quantity";
         public static final String COLUMN_METRIC = "metric";
         public static final String COLUMN_CALIBRATED = "calibrated";
-        public static final String COLUMN_QUANTITY = "quantity";
         public static final String COLUMN_DECIMALPLACES = "decimalplaces";
         public static final String COLUMN_CAL_A = "cal_a";
         public static final String COLUMN_CAL_B = "cal_b";

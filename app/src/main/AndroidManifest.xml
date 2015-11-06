@@ -1,50 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="activeng.pt.activenglab" >
+<manifest package="activeng.pt.activenglab"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH"/>
+
+    <uses-permission
+        android:name="android.permission.INTERNET"/>
+    <uses-permission
+        android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="activeng.pt.activenglab.MainActivity" />
+                android:value="activeng.pt.activenglab.MainActivity"/>
         </activity>
 
         <!-- mesmo importante aparecer aqui, senão o getContext().getContentResolver() não funciona -->
         <provider
             android:name=".data.TemperatureProvider"
-            android:authorities="activeng.pt.activenglab" />
+            android:authorities="activeng.pt.activenglab"/>
 
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
+            android:launchMode="singleTop"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="activeng.pt.activenglab.MainActivity" />
+                android:value="activeng.pt.activenglab.MainActivity"/>
         </activity>
 
         <!--
@@ -58,12 +67,12 @@
         <activity
             android:name=".CalibrationActivity"
             android:label="@string/title_activity_calibration"
+            android:launchMode="singleTop"
             android:parentActivityName=".DetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="activeng.pt.activenglab.DetailActivity" />
+                android:value="activeng.pt.activenglab.DetailActivity"/>
         </activity>
 
         <activity
@@ -71,6 +80,27 @@
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Holo.Dialog"/>
+
+        <service
+            android:name="activeng.pt.activenglab.sync.AuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator"/>
+        </service>
+
+        <service
+            android:name="activeng.pt.activenglab.sync.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter"/>
+            </intent-filter>
+            <meta-data android:name="android.content.SyncAdapter"
+                       android:resource="@xml/syncadapter" />
+        </service>
 
     </application>
 

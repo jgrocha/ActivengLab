@@ -17,6 +17,7 @@ package activeng.pt.activenglab;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.text.format.Time;
 import android.util.Log;
@@ -82,28 +83,31 @@ public class UtilitySingleton {
     }
 
     public void saveTemperature(Context mContext, double temperature, long sensorId, String address, long epoch) {
-        Uri mNewUri;
+        // This test might be removed to improve performance
+        Uri mSensorUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(sensorId, address);
+        Cursor sensorCursor = mContext.getContentResolver().query(mSensorUri, null, null, null, null);
+        if (sensorCursor.moveToFirst()) {
+            //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date dateOn = new Date(epoch*1000);
 
-        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        Date dateOn = new Date(epoch*1000);
+            ContentValues novosValues = new ContentValues();
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_SENSORID, sensorId);
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_ADDRESS, address);
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(dateOn) );
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_VALUE, temperature);
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
+            novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);
 
-        ContentValues novosValues = new ContentValues();
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_SENSORID, sensorId);
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_ADDRESS, address);
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.format(dateOn) );
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_VALUE, temperature);
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_METRIC, 1);
-        novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED, 0);
-
-        mNewUri = mContext.getContentResolver().insert(
-                TemperatureContract.TemperatureEntry.CONTENT_URI,   // the user dictionary content URI
-                novosValues                          // the values to insert
-        );
-
+            Uri mNewUri = mContext.getContentResolver().insert(
+                    TemperatureContract.TemperatureEntry.CONTENT_URI,   // the user dictionary content URI
+                    novosValues                          // the values to insert
+            );
+        }
+        sensorCursor.close();
     }
 
-    public Temperature processAndSaveMessage(Context mContext, String message, String address) {
+    public Temperature processAndSaveMessage(Context mContext, String message, String address, int state) {
         long sensor;
         Double t;
         long instant;
@@ -115,6 +119,7 @@ public class UtilitySingleton {
         //parts[3] = "1445279973"; // seconds, not milliseconds
         //Log.d("ActivEng", message);
         assert (message.charAt(0) == 'R');
+        assert (parts.length == 4);
         sensor = Integer.parseInt(parts[1]);
         try {
             t = Double.parseDouble(parts[2]);
@@ -123,7 +128,9 @@ public class UtilitySingleton {
             t = 0.0d;
             instant = 0;
         }
-        saveTemperature(mContext, t, sensor, address, instant);
+        if (state == Constants.STATE_PROTOCOL_TIME) {
+            saveTemperature(mContext, t, sensor, address, instant);
+        }
         // TODO: number of decimals places
         return new Temperature(t, formatTemperature(t, 2), sensor, instant);
     }

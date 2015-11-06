@@ -1,14 +1,19 @@
 package activeng.pt.activenglab;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
@@ -29,6 +34,20 @@ import java.util.Locale;
 import activeng.pt.activenglab.data.TemperatureContract;
 
 public class MainActivity extends AppCompatActivity {
+
+    // Constants
+    // The authority for the sync adapter's content provider
+    public static final String AUTHORITY = "activeng.pt.activenglab";
+    // An account type, in the form of a domain name
+    public static final String ACCOUNT_TYPE = "activeng.pt.activenglab.account";
+    // The account name
+    public static final String ACCOUNT = "foo";
+    // Instance fields
+    Account mAccount;
+    // A content resolver for accessing the provider
+    ContentResolver mResolver;
+    private static final long SYNC_FREQUENCY = 60 * 60;  // 1 hour (in seconds)
+
 
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
@@ -54,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("Life cyle", "MainActivity onCreate");
+        // MainActivity onCreate running on thl 5000 thl/thl/THL:4.4.2/KOT49H/1419316124:user/test-keys
+        Log.d("Life cyle", "MainActivity onCreate running on " + Build.PRODUCT + " " + Build.FINGERPRINT);
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maintoolbar);
@@ -63,6 +83,15 @@ public class MainActivity extends AppCompatActivity {
         // show the app icon
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+
+        // Create the dummy account
+        mAccount = CreateSyncAccount(this);
+        // Get the content resolver for your app
+        mResolver = getContentResolver();
+        // Turn on automatic syncing for the default account and authority
+        //mResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+        //mResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
+        //mResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(), SYNC_FREQUENCY);
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -74,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         */
+
+        if (Build.BRAND.equalsIgnoreCase("generic")) {
+            Log.d("Life cyle", "YES, I am an emulator");
+        } else {
+            Log.d("Life cyle", "NO, I am NOT an emulator");
+        }
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -108,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
     }
 
     //long requestTime = System.currentTimeMillis();
@@ -154,15 +190,40 @@ public class MainActivity extends AppCompatActivity {
             Cursor sensorCursor = getContentResolver().query(mNewUri, null, null, null, null);
             if (sensorCursor.moveToFirst()) {
                 Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " already exists in database");
+                // Compare existing data with data from Arduino
+                // Update fields if necessary
+                // TODO
             } else {
                 Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " TODO!");
+                // Insert to local database the new sensor
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date installedOn = new Date(installdate * 1000);
+                ContentValues novosValues = new ContentValues();
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORID, id);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_ADDRESS, deviceAddress);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, location);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, dateFormat.format(installedOn));
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, sensortype);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_QUANTITY, quantity);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_METRIC, metric);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, calibrated);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_DECIMALPLACES, decimalplaces);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, cal_a);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, cal_b);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL, 2000);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE, 1);
+                mNewUri = getContentResolver().insert(
+                        TemperatureContract.SensorEntry.CONTENT_URI,   // the user dictionary content URI
+                        novosValues                          // the values to insert
+                );
+                // Once, updated, the listeners of TemperatureContract.SensorEntry.CONTENT_URI will be notified
+                // The MainActivityFragment Cursor will be reloaded "for free"
             }
-
+            sensorCursor.close();
             numOfSensorsRegistered++;
             if (numOfSensorsRegistered == numOfSensorsConnected) {
                 syncronizeTime();
             }
-
         }
     }
 
@@ -176,12 +237,12 @@ public class MainActivity extends AppCompatActivity {
             String[] parts = metadata.split("\\|", -1);
 
             int serial = Integer.parseInt(parts[1]);
-            int numOfSensors =  Integer.parseInt(parts[2]);
+            int numOfSensors = Integer.parseInt(parts[2]);
             numOfSensorsConnected = numOfSensors;
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            long epoch =  Long.parseLong(parts[3]);
-            Date matadataDate = new Date(epoch*1000);
+            long epoch = Long.parseLong(parts[3]);
+            Date matadataDate = new Date(epoch * 1000);
 
             Log.d("ActivEng", "MainActivity: handleBtMetadata: Serial: " + serial + " #ofSensor: " +
                     numOfSensors + " Date: " + dateFormat.format(matadataDate));
@@ -190,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
             String message = "";
             if (numOfSensors > 0) {
                 message = "S1";
-                for(int i=2; i <= numOfSensors; i++){
+                for (int i = 2; i <= numOfSensors; i++) {
                     message += "\nS" + i;
                 }
             }
@@ -272,6 +333,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        Toast toast;
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             //Toast toast = Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT);
@@ -281,12 +343,24 @@ public class MainActivity extends AppCompatActivity {
         }
         switch (id) {
             case R.id.action_settings:
-                //Toast toast = Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT);
+                // toast = Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT);
                 //toast.show();
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
+            case R.id.action_sync_now:
+                toast = Toast.makeText(getApplicationContext(), "Sync in progress...", Toast.LENGTH_SHORT);
+                toast.show();
+                Log.d("Life cyle", "Sync now");
+                // on demand synchronization
+                //ContentResolver.requestSync(
+                //        newAccount,"com.sportsteamkarma.provider", Bundle.EMPTY);
+                Bundle settingsBundle = new Bundle();
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                mResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+                return true;
             case R.id.myswitch:
-                Toast toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
+                toast = Toast.makeText(getApplicationContext(), "Connect to bluetooth", Toast.LENGTH_SHORT);
                 toast.show();
                 Log.d("Life cyle", "Switch");
                 return true;
@@ -556,5 +630,42 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();  // Always call the superclass
         Log.d("Life cyle", "MainActivity onDestroy");
+    }
+
+    /**
+     * Create a new dummy account for the sync adapter
+     *
+     * @param context The application context
+     */
+    public static Account CreateSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(
+                ACCOUNT, ACCOUNT_TYPE);
+        // Get an instance of the Android account manager
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(
+                        ACCOUNT_SERVICE);
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+            /*
+             * If you don't set android:syncable="true" in
+             * in your <provider> element in the manifest,
+             * then call context.setIsSyncable(account, AUTHORITY, 1)
+             * here.
+             */
+            Log.d("Life cyle", "MainActivity CreateSyncAccount: if");
+
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+            Log.d("Life cyle", "MainActivity CreateSyncAccount: else");
+
+        }
+        return newAccount;
     }
 }

@@ -78,7 +78,7 @@ public class BluetoothChatService {
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
     private int mState;
-    private int mStateProtocol;
+    private int mStateProtocol = Constants.STATE_PROTOCOL_NONE;
     private Context mContext;
 
     private BroadcastReceiver connectionUpdates;
@@ -560,7 +560,7 @@ public class BluetoothChatService {
 
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[8192];
             int bytes, pos;
             StringBuilder queue = new StringBuilder("");
             String temp;
@@ -584,7 +584,7 @@ public class BluetoothChatService {
                             if (temp.length()>1) {
                                 switch (temp.charAt(0)) {
                                     case 'R':
-                                        Temperature tempObj = UtilitySingleton.getInstance().processAndSaveMessage(mContext, temp, deviceAddress);
+                                        Temperature tempObj = UtilitySingleton.getInstance().processAndSaveMessage(mContext, temp, deviceAddress, mStateProtocol);
 
                                         intent = new Intent(Constants.MESSAGE_TEMPERATURE);
                                         intent.putExtra(Constants.EXTRA_MSG_TEMP, tempObj.getRead());
@@ -595,6 +595,7 @@ public class BluetoothChatService {
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     case 'M':
+                                        mStateProtocol = Constants.STATE_PROTOCOL_METADATA;
                                         intent = new Intent(Constants.MESSAGE_METADATA).putExtra(Intent.EXTRA_TEXT, temp);
                                         //mContext.sendBroadcast(intent);
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
@@ -605,6 +606,7 @@ public class BluetoothChatService {
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                                         break;
                                     case 'T':
+                                        mStateProtocol = Constants.STATE_PROTOCOL_TIME;
                                         intent = new Intent(Constants.MESSAGE_CLOCK).putExtra(Intent.EXTRA_TEXT, temp);
                                         //mContext.sendBroadcast(intent);
                                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);

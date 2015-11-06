@@ -100,19 +100,21 @@ public class TestInsertSensorData extends AndroidTestCase {
         //TemperatureDbHelper dbHelper = new TemperatureDbHelper(mContext);
         //SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        Uri mNewUri;
         ContentValues novosValues = new ContentValues();
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORID, 1);
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_ADDRESS, "30:14:12:18:06:34");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, "Seoul");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, "2015-10-21 15:47:00");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, "PT-100 3w");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_METRIC, 1);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_CALIBRATED, 0);
+        novosValues.put(TemperatureContract.SensorEntry.COLUMN_QUANTITY, "T");
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, 0);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, 1);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL, 2000);
         novosValues.put(TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE, 1);
 
-        mNewUri = mContext.getContentResolver().insert(
+        Uri mNewUri = mContext.getContentResolver().insert(
                 SensorEntry.CONTENT_URI,   // the user dictionary content URI
                 novosValues                          // the values to insert
         );

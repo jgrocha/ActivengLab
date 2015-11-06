@@ -295,10 +295,27 @@ String output = nf.format(val);
 
 ### Remote synchronization
 
-#### Sign in with Google
+```
+        Request URL: http://localhost:3000/direct
+        Request Method:POST
+        Content-type:application/json
 
-[Add Google Sign-In to Your Android App](https://developers.google.com/identity/sign-in/android/)
+        {
+        "action":"AppGeoExt3.PgPersonnel",
+        "method":"create",
+        "data":[{"name":"Adelaide",
+            "email":"adele@gmail.com",
+            "phone":"234360101",
+            "id":"My1stGeoExt3App.model.Personnel-1"}],
+        "type":"rpc",
+        "tid":3
+        }
+```
 
+```
+        curl -v -H "Content-type: application/json" -d '{"data":[{"id":"5126","email":"anivilar@gmail.com","phone":"910333131","name":"Ana Isabel"}],"action":"AppGeoExt3.PgPersonnel","method":"create","tid":4,"type":"rpc"}' http://192.168.1.101:3000/direct
+```
+        
 ## Date and time
 
 Unix time, or POSIX time, is a system for describing points in time, defined as the number of 

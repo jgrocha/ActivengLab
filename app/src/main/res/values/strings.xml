@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">ActivengLab</string>
     <string name="action_settings">Settings</string>
-    <string name="detail_action_settings">Calibration</string>
+    <string name="action_sync_now">Sync now</string>
+    <string name="detail_action_calibration">Calibration</string>
+    <string name="detail_action_edit">Edit</string>
+    <string name="detail_action_delete">Delete</string>
 
     <string name="title_activity_settings">Settings</string>
 

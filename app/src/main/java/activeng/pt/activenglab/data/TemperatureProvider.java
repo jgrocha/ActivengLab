@@ -230,6 +230,14 @@ public class TemperatureProvider extends ContentProvider {
                 rowsDeleted = db.delete(
                         TemperatureContract.SensorEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case SENSOR_BY_ID_AND_ADDRESS:
+                String sensorId = TemperatureContract.SensorEntry.getSensorIdFromUri(uri);
+                String sensorAddress = TemperatureContract.SensorEntry.getSensorAddressFromUri(uri);
+                Log.d("SQLite3", "sensorId: " + sensorId + " sensorAddress: " + sensorAddress);
+                rowsDeleted = db.delete(
+                        TemperatureContract.SensorEntry.TABLE_NAME, "sensorid = ? AND address = ?", new String[]{sensorId, sensorAddress});
+                Log.d("SQLite3", "sensorId: " + sensorId + " sensorAddress: " + sensorAddress + " rowsDeleted: " + rowsDeleted);
+                break;
             case TEMPERATURE:
                 rowsDeleted = db.delete(
                         TemperatureContract.TemperatureEntry.TABLE_NAME, selection, selectionArgs);

@@ -1,8 +1,10 @@
 package activeng.pt.activenglab;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
@@ -90,7 +93,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             f.setMinimumFractionDigits(2);
             DecimalFormatSymbols custom = new DecimalFormatSymbols();
             custom.setDecimalSeparator('.');
-            ((DecimalFormat)f).setDecimalFormatSymbols(custom);
+            ((DecimalFormat) f).setDecimalFormatSymbols(custom);
         }
 
         UtilitySingleton.getInstance().init(getActivity().getApplicationContext());
@@ -112,7 +115,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
                     instant = extras.getLong(Constants.EXTRA_MSG_TEMP_MILLIS, 0);
 
                     if (sensor == currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
-                        etCurrentRead.setText( tempStr );
+                        etCurrentRead.setText(tempStr);
                         // TODO
                         // Create the graph only after we have enougth data.
                         // Log.d("ActivEng", "d5 " + temp.getMillis());
@@ -148,7 +151,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
         // you can directly pass Date objects to DataPoint-Constructor
         // this will convert the Date to double via Date#getTime()
-        series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+        series = new LineGraphSeries<DataPoint>(new DataPoint[]{
                 new DataPoint(d1, 1),
                 new DataPoint(d2, 5),
                 new DataPoint(d3, 3),
@@ -225,7 +228,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         // old cursor once we return.)
         //Cursor aux;
         Log.d("ActivEng", "DetailActivityFragment onLoadFinished. getCount() = " + data.getCount() + " getColumnCount() = " + data.getColumnCount());
-        if (data.moveToFirst()){
+        if (data.moveToFirst()) {
             if (currentSensor == null) {
                 currentSensor = new ContentValues();
                 DatabaseUtils.cursorRowToContentValues(data, currentSensor);
@@ -260,15 +263,49 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        Toast toast;
         switch (id) {
             //case R.id.activity_menu_item:
             //    // Not implemented here
             //    return false;
-            case R.id.detail_action_settings:
+            case R.id.detail_action_calibration:
                 // Do Fragment menu item stuff here
                 Intent intent = new Intent(getActivity(), CalibrationActivity.class);
                 intent.putExtra(TemperatureContract.SensorEntry.TABLE_NAME, currentSensor);
                 startActivity(intent);
+                return true;
+            case R.id.detail_action_edit:
+                // Do Fragment menu item stuff here
+                toast = Toast.makeText(getActivity().getApplicationContext(), "Edit sensor", Toast.LENGTH_SHORT);
+                toast.show();
+                ((DetailActivity) getActivity()).done();
+                return true;
+            case R.id.detail_action_delete:
+                // Do Fragment menu item stuff here
+                //toast = Toast.makeText(getActivity().getApplicationContext(), "Delete sensor", Toast.LENGTH_SHORT);
+                //toast.show();
+
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                        int s = currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID);
+                        String a = currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS);
+                        Uri mNewUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(s, a);
+                        getActivity().getContentResolver().delete(mNewUri, null, null);
+
+                        String message = "Sensor " + s + " at " + a + " was deleted.";
+                        Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                        // Get back to MainActivity
+                        ((DetailActivity) getActivity()).done();
+                    }
+                };
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Delete sensor")
+                        .setMessage("Do you really want to delete this sensor and all data already recorded?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(R.string.detail_action_delete, dialogClickListener)
+                        .setNegativeButton(android.R.string.no, null).show();
+
                 return true;
             default:
                 break;
