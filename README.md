@@ -314,8 +314,14 @@ String output = nf.format(val);
 
 ```
         curl -v -H "Content-type: application/json" -d '{"data":[{"id":"5126","email":"anivilar@gmail.com","phone":"910333131","name":"Ana Isabel"}],"action":"AppGeoExt3.PgPersonnel","method":"create","tid":4,"type":"rpc"}' http://192.168.1.101:3000/direct
+        curl -v -H "Content-type: application/json" -d @status.json http://localhost:3000/direct
 ```
-        
+       
+#### Hide dummy account from Account Settings
+ 
+[Hide dummy account](http://stackoverflow.com/questions/19562432/hide-dummy-account-for-sync-adapter-from-settings).
+[sync-adapter-without-account](http://stackoverflow.com/questions/5146272/sync-adapter-without-account)
+
 ## Date and time
 
 Unix time, or POSIX time, is a system for describing points in time, defined as the number of 

@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     // An account type, in the form of a domain name
     public static final String ACCOUNT_TYPE = "activeng.pt.activenglab.account";
     // The account name
-    public static final String ACCOUNT = "foo";
+    public static final String ACCOUNT = "android@activeng.pt";
     // Instance fields
     Account mAccount;
     // A content resolver for accessing the provider
