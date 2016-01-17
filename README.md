@@ -295,6 +295,12 @@ String output = nf.format(val);
 
 ### Remote synchronization
 
+Status: 
+Faz a query para os sensores;
+    Para cada sensor, vê se existe no servidor e até que data tem dados.
+        Se não existir no servidor, cria o sensor.
+Falta: Com os sensores criados e com a última data conhecida, falta mandar os dados de cada sensor para o servidor.
+
 ```
         Request URL: http://localhost:3000/direct
         Request Method:POST

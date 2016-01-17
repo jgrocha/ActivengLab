@@ -13,6 +13,11 @@
         android:title="@string/detail_action_edit"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/detail_action_program"
+        android:orderInCategory="100"
+        android:title="@string/detail_action_program"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/detail_action_delete"
         android:orderInCategory="100"
         android:title="@string/detail_action_delete"

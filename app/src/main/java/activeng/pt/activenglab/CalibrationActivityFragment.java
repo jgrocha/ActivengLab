@@ -32,7 +32,7 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
 
     private long _ID = 0;           // Local _ID autoincrement
     private int sensorId = 0;       // Arduino ID
-    private String address;       // Arduino bluetooth address
+    private String address;         // Arduino bluetooth address
     private double cal_a, cal_b;
     private double cal_a_new = Double.MAX_VALUE, cal_b_new = Double.MAX_VALUE;
     private ContentValues currentSensor = null;

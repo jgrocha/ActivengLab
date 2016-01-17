@@ -4,6 +4,7 @@
     <string name="action_sync_now">Sync now</string>
     <string name="detail_action_calibration">Calibration</string>
     <string name="detail_action_edit">Edit</string>
+    <string name="detail_action_program">Program</string>
     <string name="detail_action_delete">Delete</string>
 
     <string name="title_activity_settings">Settings</string>
@@ -89,6 +90,7 @@
 
     <string name="bt_not_enabled_leaving">Bluetooth was not enabled.</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_program">ProgramActivity</string>
 </resources>

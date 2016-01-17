@@ -264,13 +264,14 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         Toast toast;
+        Intent intent;
         switch (id) {
             //case R.id.activity_menu_item:
             //    // Not implemented here
             //    return false;
             case R.id.detail_action_calibration:
                 // Do Fragment menu item stuff here
-                Intent intent = new Intent(getActivity(), CalibrationActivity.class);
+                intent = new Intent(getActivity(), CalibrationActivity.class);
                 intent.putExtra(TemperatureContract.SensorEntry.TABLE_NAME, currentSensor);
                 startActivity(intent);
                 return true;
@@ -279,6 +280,12 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
                 toast = Toast.makeText(getActivity().getApplicationContext(), "Edit sensor", Toast.LENGTH_SHORT);
                 toast.show();
                 ((DetailActivity) getActivity()).done();
+                return true;
+            case R.id.detail_action_program:
+                intent = new Intent(getActivity(), ProgramActivity.class);
+                intent.putExtra(TemperatureContract.SensorEntry.TABLE_NAME, currentSensor);
+                startActivity(intent);
+                //((DetailActivity) getActivity()).done();
                 return true;
             case R.id.detail_action_delete:
                 // Do Fragment menu item stuff here

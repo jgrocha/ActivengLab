@@ -5,6 +5,8 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import java.util.Date;
+
 /**
  * Defines table and column names for the temperature database.
  */
@@ -101,6 +103,22 @@ public class TemperatureContract {
         // sacar temperaturas
         public static Uri buildTemperatureUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildTemperatureWithLastDate(long id, String address, String last) {
+            //return ContentUris.withAppendedId(CONTENT_URI, id);
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(id)).appendPath(address).appendPath(last).build();
+        }
+
+
+        public static String getSensorIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+        public static String getSensorAddressFromUri(Uri uri) {
+            return uri.getPathSegments().get(2);
+        }
+        public static String getLastTemperatureFromUri(Uri uri) {
+            return uri.getPathSegments().get(3);
         }
 
     }
