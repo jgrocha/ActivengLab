@@ -83,6 +83,7 @@ public class UtilitySingleton {
     }
 
     public void saveTemperature(Context mContext, double temperature, long sensorId, String address, long epoch) {
+        // TODO
         // This test might be removed to improve performance
         Uri mSensorUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(sensorId, address);
         Cursor sensorCursor = mContext.getContentResolver().query(mSensorUri, null, null, null, null);

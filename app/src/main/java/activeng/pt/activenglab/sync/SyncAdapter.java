@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,14 +31,10 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import activeng.pt.activenglab.data.TemperatureContract;
@@ -62,7 +57,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize);
 
         try {
-            url = new URL("http://192.168.1.94:3000/direct");
+            url = new URL("http://192.168.1.102:3000/direct");
         } catch (MalformedURLException e) {
             Log.d("ActivEng", "SyncAdapter: MalformedURLException");
             e.printStackTrace();
@@ -94,8 +89,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-    public String commSyncSensor(int sid, String address) {
-        Log.d("ActivEng", "---8<------ commSyncSensor -------------------->8----");
+    public String getSensorStatusFromRemoteServer(int sid, String address, final SyncResult syncResult) {
+        Log.d("ActivEng", "---8<------ getSensorStatusFromRemoteServer -------------------->8----");
 
         //URL url;
         HttpURLConnection urlConn = null;
@@ -103,7 +98,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String line, result = "";
 
         try {
-            //url = new URL("http://192.168.1.94:3000/direct");
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setConnectTimeout(5000);
@@ -120,8 +114,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             jsonParam.put("tid", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
 
             JSONObject jsonData = new JSONObject();
-            //jsonData.put("type", "Ana Isabel");
-            //jsonData.put("location", "910333131");
             jsonData.put("address", address);
             jsonData.put("sensorid", Integer.toString(sid));
 
@@ -135,7 +127,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             //);
             String request = jsonParam.toString();
 
-            Log.d("ActivEng", "commSyncSensor: JSON: " + request);
+            Log.d("ActivEng", "getSensorStatusFromRemoteServer: JSON: " + request);
 
             OutputStreamWriter writer = new OutputStreamWriter(urlConn.getOutputStream());
             writer.write(request);
@@ -143,23 +135,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
             while ((line = reader.readLine()) != null) {
-                Log.d("ActivEng", "commSyncSensor: InputStreamReader: " + line);
+                Log.d("ActivEng", "getSensorStatusFromRemoteServer: InputStreamReader: " + line);
                 result += line;
             }
             writer.close();
             reader.close();
 
         } catch (MalformedURLException e) {
-            Log.d("ActivEng", "commSyncSensor: MalformedURLException");
+            Log.d("ActivEng", "getSensorStatusFromRemoteServer: MalformedURLException");
+            syncResult.stats.numParseExceptions++;
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
-            Log.d("ActivEng", "commSyncSensor: UnsupportedEncodingException");
+            Log.d("ActivEng", "getSensorStatusFromRemoteServer: UnsupportedEncodingException");
             e.printStackTrace();
         } catch (JSONException e) {
-            Log.d("ActivEng", "commSyncSensor: JSONException");
+            Log.d("ActivEng", "getSensorStatusFromRemoteServer: JSONException");
+            syncResult.stats.numParseExceptions++;
             e.printStackTrace();
         } catch (IOException e) {
-            Log.d("ActivEng", "commSyncSensor: IOException");
+            Log.d("ActivEng", "getSensorStatusFromRemoteServer: IOException");
+            syncResult.stats.numIoExceptions++;
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(urlConn.getErrorStream()));
             try {
                 while ((line = errorReader.readLine()) != null) {
@@ -186,7 +181,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return result;
     }
 
-    public String createSensor(int sid, String address) {
+    public String createSensor(int sid, String address, final SyncResult syncResult) {
         Log.d("ActivEng", "---8<------ createSensor -------------------->8----");
 
         //URL url;
@@ -195,7 +190,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String line, result = "";
 
         try {
-            //url = new URL("http://192.168.0.177:3000/direct");
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setConnectTimeout(5000);
@@ -245,15 +239,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         } catch (MalformedURLException e) {
             Log.d("ActivEng", "createSensor: MalformedURLException");
+            syncResult.stats.numParseExceptions++;
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             Log.d("ActivEng", "createSensor: UnsupportedEncodingException");
             e.printStackTrace();
         } catch (JSONException e) {
             Log.d("ActivEng", "createSensor: JSONException");
+            syncResult.stats.numParseExceptions++;
             e.printStackTrace();
         } catch (IOException e) {
             Log.d("ActivEng", "createSensor: IOException");
+            syncResult.stats.numIoExceptions++;
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(urlConn.getErrorStream()));
             try {
                 while ((line = errorReader.readLine()) != null) {
@@ -280,20 +277,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return result;
     }
 
-    public void processSensor(String result, int sid, String address) {
+    public int processSensor(String result, int sid, String address, final SyncResult syncResult) {
         Log.d("ActivEng", "---8<------ processSensor -------------------->8----");
         Log.d("ActivEng", "result = " + result);
 
         String resultCreate;
+        int inserts = 0;
+        int updates = 0;
+        int res = 0;
 
         /*
         {
           "action": "ActiveEngCloud.Sensor",
           "result": {
-            "total": 1,
-            "data": [commSyncSensor
+            "total": 1,resultCreate
+            "data": [getSensorStatusFromRemoteServer
               {
-                "address": "30:14:12:18:06:34",
+                "addressresultCreate": "30:14:12:18:06:34",
                 "sensorid": 2,
                 "lastcalibration": null,
                 "lasttemperature": null
@@ -316,7 +316,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 int total = subObj.getInt("total");
                 if (total == 0) {
                     Log.d("ActivEng", "sensor " + sid + "@" + address + " does not exist on the server"); // good!
-                    resultCreate = createSensor(sid, address);
+                    resultCreate = createSensor(sid, address, syncResult);
                     Log.d("ActivEng", "createSensor(" + sid + ", " + address + ")=" + resultCreate);
                     // [{"type":"exception","tid":1452936830,"action":"ActiveEngCloud.Sensor","method":"create","message":{"text":"Database error","detail":"error: null value in column \"sensortype\" violates not-null constraint"},"data":{"message":{"text":"Database error","detail":"error: null value in column \"sensortype\" violates not-null constraint"}}}]
                     // [{"type":"rpc","tid":1452938503,"action":"ActiveEngCloud.Sensor","method":"create","result":{"data":[{"sensorid":2,"address":"30:14:12:18:06:34","location":"Meizu MX 4 PRO","installdate":"2016-01-16T10:01:43.430Z","sensortype":"Nimbus 2000","metric":1,"calibrated":0,"quantity":"T","decimalplaces":3,"cal_a":0,"cal_b":1,"read_interval":2000,"record_sample":1,"id":8}],"total":1,"success":true}}]
@@ -331,7 +331,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         int totalCreate = subObjCreate.getInt("total");
                         if (totalCreate == 1) {
                             Log.d("ActivEng", "createSensor correu muito bem :-) ");
-                            uploadSensor(sid, address, null);
+                            inserts++;
+                            res = uploadSensorTemperature(sid, address, null, syncResult);
+                            inserts += res;
                         }
                     }
                 } else {
@@ -348,34 +350,130 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 lasttemperaturestr = lasttemperaturestr.replaceAll("Z", "+0000");
                                 Log.d("ActivEng", "processSensor: lasttemperaturestr: " + lasttemperaturestr);
                                 Date lasttemperature = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault()).parse(lasttemperaturestr);
-                                TimeZone tz = TimeZone.getTimeZone("UTC");
-                                DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-                                df.setTimeZone(tz);
+                                //TimeZone tz = TimeZone.getTimeZone("UTC");
+                                //DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+                                DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                //df.setTimeZone(tz);
                                 String nowAsISO = df.format(lasttemperature);
                                 Log.d("ActivEng", "processSensor: " + nowAsISO); // perfeito p/ sensor 1
-                                uploadSensor(sid, address, lasttemperaturestr);
+                                res = uploadSensorTemperature(sid, address, nowAsISO, syncResult);
+                                inserts += res;
                             } catch (ParseException e) {
                                 Log.d("ActivEng", "processSensor: ParseException: lasttemperaturestr=" + lasttemperaturestr + " lastcalibrationstr=" + lastcalibrationstr);
                                 e.printStackTrace();
                             }
                         } else {
                             Log.d("ActivEng", "processSensor: no temperature data on server for sensor " + sid); // perfeito p/ sensor 3
-                            uploadSensor(sid, address, null);
+                            res = uploadSensorTemperature(sid, address, null, syncResult);
+                            inserts += res;
                         }
-
                         Log.d("ActivEng", "row[" + j + "] = " + jRow);
-
                     }
                 }
             }
         } catch (JSONException e) {
             Log.d("ActivEng", "processSensor: JSONException");
+            syncResult.stats.numParseExceptions++;
             e.printStackTrace();
         }
+        return inserts;
     }
 
-    public void uploadSensor(int sid, String address, String last) {
-        Log.d("ActivEng", "uploadSensor: " + sid + " " + address + " " + last);
+    public String createTemperature(int sid, String address, String created, Double value, Integer metric, Integer cal, final SyncResult syncResult) {
+        Log.d("ActivEng", "---8<------ createTemperature -------------------->8----");
+
+        //URL url;
+        HttpURLConnection urlConn = null;
+        DataOutputStream printout;
+        String line, result = "";
+
+        try {
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setConnectTimeout(5000);
+            urlConn.setReadTimeout(5000);
+            urlConn.setRequestProperty("Accept", "application/json");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            urlConn.connect();
+
+            //Create JSONObject here
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("action", "ActiveEngCloud.Temperature");
+            jsonParam.put("method", "create");
+            jsonParam.put("type", "rpc");
+            jsonParam.put("tid", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
+
+            JSONObject jsonData = new JSONObject();
+            //jsonData.put("type", "Ana Isabel");
+            //jsonData.put("location", "910333131");
+            jsonData.put("address", address);
+            jsonData.put("sensorid", Integer.toString(sid));
+            jsonData.put("value", value);
+            jsonData.put("created", created);
+
+            JSONArray rows = new JSONArray();
+            rows.put(jsonData);
+            jsonParam.put("data", rows);
+
+            //String request = URLEncoder.encode(
+            //        jsonParam.toString(),
+            //        "UTF-8" // java.nio.charset.StandardCharsets.UTF_8.toString()
+            //);
+            String request = jsonParam.toString();
+
+            Log.d("ActivEng", "createTemperature: JSON: " + request);
+
+            OutputStreamWriter writer = new OutputStreamWriter(urlConn.getOutputStream());
+            writer.write(request);
+            writer.flush();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+            while ((line = reader.readLine()) != null) {
+                Log.d("ActivEng", "createTemperature: InputStreamReader: " + line);
+                result += line;
+            }
+            writer.close();
+            reader.close();
+
+        } catch (MalformedURLException e) {
+            Log.d("ActivEng", "createTemperature: MalformedURLException");
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            Log.d("ActivEng", "createTemperature: UnsupportedEncodingException");
+            e.printStackTrace();
+        } catch (JSONException e) {
+            Log.d("ActivEng", "createTemperature: JSONException");
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.d("ActivEng", "createTemperature: IOException");
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(urlConn.getErrorStream()));
+            try {
+                while ((line = errorReader.readLine()) != null) {
+                    //System.out.println(line);
+                    Log.d("ActivEng", "getErrorStream: " + line);
+                }
+                errorReader.close();
+            } catch (IOException enew) {
+                Log.d("ActivEng", "getErrorStream: IOException");
+                enew.printStackTrace();
+            }
+            // debug
+            Map<String, List<String>> map = urlConn.getHeaderFields();
+            for (String key : map.keySet()) {
+                List<String> values = map.get(key);
+                for (String thevalue : values) {
+                    Log.d("ActivEng", key + " --> " + thevalue);
+                }
+            }
+            e.printStackTrace();
+        } finally {
+            urlConn.disconnect();
+        }
+        return result;
+    }
+
+    public int uploadSensorTemperature(int sid, String address, String last, final SyncResult syncResult) {
+        Log.d("ActivEng", "uploadSensorTemperature: " + sid + " " + address + " " + last);
 
         Uri weatherForLocationUri = TemperatureContract.TemperatureEntry.buildTemperatureWithLastDate(sid, address, last);
         Cursor mCursor = mContentResolver.query(
@@ -384,7 +482,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 null,                    // Selection criteria
                 null,                     // Selection criteria
                 null);
-        Log.d("ActivEng", "uploadSensor: mCursor.getCount(): " + mCursor.getCount());
+        Log.d("ActivEng", "uploadSensorTemperature: mCursor.getCount(): " + mCursor.getCount());
+        int i=0;
+        while (mCursor.moveToNext() && i<500) {
+            Integer _sensorid = mCursor.getInt(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_SENSORID));
+            String _address = mCursor.getString(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_ADDRESS));
+            // SQLite stores a string representing the time in UTC (GMT), using the format YYYY-MM-DD HH:MM:SS
+            // http://stackoverflow.com/questions/14255830/fetching-date-from-sqlite-database-in-android
+            String _created = mCursor.getString(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_CREATED));
+            Double _value = mCursor.getDouble(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_VALUE));
+            Integer _metric = mCursor.getInt(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_METRIC));
+            Integer _cal = mCursor.getInt(mCursor.getColumnIndexOrThrow(TemperatureContract.TemperatureEntry.COLUMN_CALIBRATED));
+            createTemperature(_sensorid, _address, _created, _value, _metric, _cal, syncResult);
+            i = i+1;
+        }
+        mCursor.close();
+        return i;
     }
 
     /*
@@ -405,7 +518,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         long _ID;
         int sensorid;
         String address, location, type;
-        int i = 1;
+        int i = 0;
+        int res = 0;
 
         Log.d("ActivEng", "---8<------ onPerformSync -------------------->8----");
 
@@ -424,13 +538,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             address = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
             location = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_LOCATION));
             type = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
-            Log.d("ActivEng", "onPerformSync: commSyncSensor(" + sensorid + "); // TODO");
-            processSensor(commSyncSensor(sensorid, address), sensorid, address);
-            Log.d("ActivEng", "onPerformSync: commSyncSensor(" + sensorid + "); Done!");
+            Log.d("ActivEng", "onPerformSync: getSensorStatusFromRemoteServer(" + sensorid + "); // TODO");
+            res = processSensor(getSensorStatusFromRemoteServer(sensorid, address, syncResult), sensorid, address, syncResult);
+            Log.d("ActivEng", "onPerformSync: getSensorStatusFromRemoteServer(" + sensorid + "); Done!");
             i += 1;
+            syncResult.stats.numInserts += res;
         }
         cursor.close();
 
+        syncResult.stats.numEntries = syncResult.stats.numInserts;
     }
 
 }
