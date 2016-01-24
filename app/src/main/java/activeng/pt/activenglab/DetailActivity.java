@@ -38,8 +38,8 @@ public class DetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Log.d("Life cyle", "DetailActivity onCreate: savedInstanceState == null");
             Intent intent = getIntent();
-            if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry._ID)) {
-                sensorId = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
+            if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
+                sensorId = intent.getLongExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID, 0);
             }
         }
 

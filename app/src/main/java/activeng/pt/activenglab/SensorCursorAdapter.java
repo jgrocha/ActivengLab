@@ -36,7 +36,7 @@ public class SensorCursorAdapter extends CursorAdapter {
         EditText etCalGain = (EditText) view.findViewById(R.id.etCalGain);
 
         // Extract properties from cursor
-        int sensorId = cursor.getInt(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry._ID));
+        int sensorId = cursor.getInt(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORID));
         String sensorLocation = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_LOCATION));
         String sensorType = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
         // Populate fields with extracted properties

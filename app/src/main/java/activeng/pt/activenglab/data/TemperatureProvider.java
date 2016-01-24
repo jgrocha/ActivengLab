@@ -34,8 +34,8 @@ public class TemperatureProvider extends ContentProvider {
 
     static final int TEMPERATURE = 100;
     static final int SENSOR = 300;
-    static final int SENSOR_BY_ID = 301;
-    static final int SENSOR_BY_ID_AND_ADDRESS = 302;
+    static final int SENSOR_BY_SENSORID = 302;
+    static final int SENSOR_BY_ID_AND_ADDRESS = 303;
     static final int TEMPERATURE_AFTER = 401;
     static final int CALIBRATION = 700;
 
@@ -60,7 +60,7 @@ public class TemperatureProvider extends ContentProvider {
         // matcher.addURI("com.example.android.bluetoothchat", "calibration", 700);
         matcher.addURI(authority, TemperatureContract.PATH_CALIBRATION, CALIBRATION);
 
-        matcher.addURI(authority, TemperatureContract.PATH_SENSOR + "/#", SENSOR_BY_ID);
+        matcher.addURI(authority, TemperatureContract.PATH_SENSOR + "/#", SENSOR_BY_SENSORID);
         matcher.addURI(authority, TemperatureContract.PATH_SENSOR + "/#/*", SENSOR_BY_ID_AND_ADDRESS);
         matcher.addURI(authority, TemperatureContract.PATH_TEMPERATURE + "/#/*/*", TEMPERATURE_AFTER);
 
@@ -81,7 +81,7 @@ public class TemperatureProvider extends ContentProvider {
         switch (match) {
             case SENSOR:
                 return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
-            case SENSOR_BY_ID:
+            case SENSOR_BY_SENSORID:
                 return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
             case SENSOR_BY_ID_AND_ADDRESS:
                 return TemperatureContract.SensorEntry.CONTENT_DIR_TYPE;
@@ -117,14 +117,14 @@ public class TemperatureProvider extends ContentProvider {
                 break;
             }
             // "sensor/2"
-            case SENSOR_BY_ID: {
+            case SENSOR_BY_SENSORID: {
                 String sensorId = TemperatureContract.SensorEntry.getSensorIdFromUri(uri);
                 Log.d("SQLite3", "sensorId: " + sensorId);
 
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         TemperatureContract.SensorEntry.TABLE_NAME,
                         projection,                 // columns
-                        "_id = ?",                  // where filter, with ? for values
+                        "sensorid = ?",                  // where filter, with ? for values
                         new String[]{sensorId},     // values for ?
                         null,                       // groupBy
                         null,                       // having
@@ -155,7 +155,9 @@ public class TemperatureProvider extends ContentProvider {
                 String sensorId = TemperatureContract.TemperatureEntry.getSensorIdFromUri(uri);
                 String sensorAddress = TemperatureContract.TemperatureEntry.getSensorAddressFromUri(uri);
                 String lastDate = TemperatureContract.TemperatureEntry.getLastTemperatureFromUri(uri);
-
+                if (lastDate == null || lastDate.equals("null")) {
+                    lastDate = "1970-01-01 00:00:00";
+                }
                 Log.d("SQLite3", "sensorId: " + sensorId + " sensorAddress: " + sensorAddress + " lastDate: " + lastDate);
 
                 retCursor = mOpenHelper.getReadableDatabase().query(

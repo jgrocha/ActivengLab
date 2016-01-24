@@ -30,7 +30,6 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
     private EditText cal_current_read;
     private EditText cal_new_read;
 
-    private long _ID = 0;           // Local _ID autoincrement
     private int sensorId = 0;       // Arduino ID
     private String address;         // Arduino bluetooth address
     private double cal_a, cal_b;
@@ -95,7 +94,6 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
             if (calIntent.hasExtra(TemperatureContract.SensorEntry.TABLE_NAME)) {
                 //sensorId = Long.parseLong(calIntent.getStringExtra("_id"), 10);
                 currentSensor = (ContentValues) calIntent.getParcelableExtra(TemperatureContract.SensorEntry.TABLE_NAME);
-                _ID = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
                 sensorId = currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID);
                 address = currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS);
 
@@ -125,8 +123,8 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
         updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_A, cal_a_new);
         updatedValues.put(TemperatureContract.SensorEntry.COLUMN_CAL_B, cal_b_new);
         int count = getActivity().getContentResolver().update(
-                TemperatureContract.SensorEntry.CONTENT_URI, updatedValues, TemperatureContract.SensorEntry._ID + "= ?",
-                new String[] { Long.toString(_ID)});
+                TemperatureContract.SensorEntry.CONTENT_URI, updatedValues, TemperatureContract.SensorEntry.COLUMN_SENSORID + "= ?",
+                new String[] { Long.toString(sensorId)});
         // create new entry in calibration
         Uri mNewUri;
 

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -24,9 +25,10 @@ import activeng.pt.activenglab.data.TemperatureContract;
 public class ProgramActivityFragment extends Fragment implements View.OnClickListener {
 
     private BroadcastReceiver conn2BTService;
+    private boolean registered = false;
+
     private EditText prog_currentread;
 
-    private long _ID = 0;           // Local _ID autoincrement
     private int sensorId = 0;       // Arduino ID
     private String address;         // Arduino bluetooth address
     private double cal_a_new = Double.MAX_VALUE, cal_b_new = Double.MAX_VALUE;
@@ -80,7 +82,6 @@ public class ProgramActivityFragment extends Fragment implements View.OnClickLis
             if (calIntent.hasExtra(TemperatureContract.SensorEntry.TABLE_NAME)) {
                 //sensorId = Long.parseLong(calIntent.getStringExtra("_id"), 10);
                 currentSensor = (ContentValues) calIntent.getParcelableExtra(TemperatureContract.SensorEntry.TABLE_NAME);
-                _ID = currentSensor.getAsLong(TemperatureContract.SensorEntry._ID);
                 sensorId = currentSensor.getAsInteger(TemperatureContract.SensorEntry.COLUMN_SENSORID);
                 address = currentSensor.getAsString(TemperatureContract.SensorEntry.COLUMN_ADDRESS);
 
@@ -135,6 +136,32 @@ public class ProgramActivityFragment extends Fragment implements View.OnClickLis
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("ActivEng", "ProgramActivityFragment registerReceiver onResume()");
+        // old global broadcast receiver
+        //getActivity().registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_TEMPERATURE));
+        // new
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+        IntentFilter filter = new IntentFilter(Constants.MESSAGE_TEMPERATURE);
+        manager.registerReceiver(this.conn2BTService, filter);
+        registered = true;
+    }
+
+    @Override
+    public void onPause() {
+        Log.d("ActivEng", "ProgramActivityFragment unregisterReceiver onPause()");
+        // old global broadcast receiver
+        //getActivity().unregisterReceiver(this.conn2BTService);
+        // new
+        if (registered) {
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getActivity());
+            manager.unregisterReceiver(this.conn2BTService);
+        }
+        super.onPause();
     }
 
 }

@@ -49,9 +49,10 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 // if it cannot seek to that position.
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
-                    long _ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
+                    //long _ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
+                    long _SENSORID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORID));
                     Intent intent = new Intent(getActivity(), DetailActivity.class);
-                    intent.putExtra(TemperatureContract.SensorEntry._ID, _ID);
+                    intent.putExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID, _SENSORID);
                     startActivity(intent);
                 }
             }

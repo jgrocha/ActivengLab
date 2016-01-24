@@ -46,7 +46,7 @@ import activeng.pt.activenglab.data.TemperatureContract;
  */
 public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private long _ID = 0;
+    private long _SENSORID = 0;
 
     private ContentValues currentSensor = null;
 
@@ -183,9 +183,9 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         Bundle args = new Bundle();
         Uri uri;
         Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry._ID)) {
-            _ID = intent.getLongExtra(TemperatureContract.SensorEntry._ID, 0);
-            uri = TemperatureContract.SensorEntry.buildSensorUri(_ID);
+        if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
+            _SENSORID = intent.getLongExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID, 0);
+            uri = TemperatureContract.SensorEntry.buildSensorUri(_SENSORID);
             Log.d("SensorCursorAdapter", uri.toString());
             args.putParcelable("URI", uri);
             getLoaderManager().initLoader(0, args, this);

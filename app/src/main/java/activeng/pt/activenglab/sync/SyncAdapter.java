@@ -9,10 +9,12 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -56,8 +58,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String server = preferences.getString("remote_url", null);
+
         try {
-            url = new URL("http://192.168.1.102:3000/direct");
+            url = new URL(server);
         } catch (MalformedURLException e) {
             Log.d("ActivEng", "SyncAdapter: MalformedURLException");
             e.printStackTrace();
@@ -515,7 +520,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider,
             SyncResult syncResult) {
 
-        long _ID;
+        //long _ID;
         int sensorid;
         String address, location, type;
         int i = 0;
@@ -533,7 +538,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d("ActivEng", "onPerformSync: cursor.getCount(): " + cursor.getCount());
 
         while (cursor.moveToNext()) {
-            _ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
+            //_ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
             sensorid = cursor.getInt(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORID));
             address = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
             location = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_LOCATION));
