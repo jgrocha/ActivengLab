@@ -277,9 +277,14 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
                 return true;
             case R.id.detail_action_edit:
                 // Do Fragment menu item stuff here
-                toast = Toast.makeText(getActivity().getApplicationContext(), "Edit sensor", Toast.LENGTH_SHORT);
-                toast.show();
-                ((DetailActivity) getActivity()).done();
+                //toast = Toast.makeText(getActivity().getApplicationContext(), "Edit sensor", Toast.LENGTH_SHORT);
+                //toast.show();
+                //((DetailActivity) getActivity()).done();
+
+                intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra(TemperatureContract.SensorEntry.TABLE_NAME, currentSensor);
+                startActivity(intent);
+
                 return true;
             case R.id.detail_action_program:
                 intent = new Intent(getActivity(), ProgramActivity.class);
