@@ -31,15 +31,26 @@ public class ItemSensorCursorAdapter extends CursorAdapter {
         TextView tvAddress = (TextView) view.findViewById(R.id.tvAddress);
         TextView tvLocation = (TextView) view.findViewById(R.id.tvLocation);
         TextView tvSensorType = (TextView) view.findViewById(R.id.tvSensorType);
+        // TODO
+        TextView tvSensorCurrentValue = (TextView) view.findViewById(R.id.tvSensorLastValue);
+        TextView tvSensorLastRead = (TextView) view.findViewById(R.id.tvSensorLastRead);
+
         // Extract properties from cursor
         int sensorId = cursor.getInt(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORID));
         String sensorAddress = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_ADDRESS));
         String sensorLocation = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_LOCATION));
         String sensorType = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE));
+        // TODO
+        double lastValue = cursor.getDouble(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.LAST_VALUE));
+        String lastRead = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.LAST_READ));
+
         // Populate fields with extracted properties
         tvID.setText(String.valueOf(sensorId));
         tvAddress.setText(sensorAddress);
         tvLocation.setText(sensorLocation);
         tvSensorType.setText(sensorType);
+        // TODO
+        tvSensorCurrentValue.setText(String.valueOf(lastValue));
+        tvSensorLastRead.setText(lastRead);
     }
 }

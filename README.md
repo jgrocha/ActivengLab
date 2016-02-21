@@ -402,3 +402,7 @@ S       | `S|1|Rita Rocha|1445122175|PT 100|T|1|1|3|2.738895|1.007828`
 E       | 
 P       | `P|On` ou `P|Off`
 W       | `W|Message not recognized`
+
+### Comunication android ←→ server in real time using socket.io
+
+http://socket.io/blog/native-socket-io-and-android/

@@ -19,7 +19,7 @@
         >
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
             android:layout_height="wrap_content"
             android:text="Offset (current)"
             android:id="@+id/textView"
@@ -27,7 +27,8 @@
             android:layout_column="0"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:text="Gain (current)"
             android:id="@+id/textView2"
@@ -35,7 +36,8 @@
             android:layout_column="1"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:text="Current read"
             android:id="@+id/textView9"
@@ -43,12 +45,13 @@
             android:layout_column="2"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_current_offset"
             android:layout_row="1"
             android:layout_column="0"
-            android:ems="4"
+            android:ems="2"
             android:text="0.0001"
             android:clickable="false"
             android:cursorVisible="false"
@@ -56,12 +59,13 @@
             android:focusableInTouchMode="false"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_current_gain"
             android:layout_row="1"
             android:layout_column="1"
-            android:ems="4"
+            android:ems="2"
             android:text="1.00002"
             android:clickable="false"
             android:cursorVisible="false"
@@ -69,12 +73,13 @@
             android:focusableInTouchMode="false"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_current_read"
             android:layout_row="1"
             android:layout_column="2"
-            android:ems="4"
+            android:ems="2"
             android:text="26.32"
             android:layout_gravity="center_horizontal"
             android:clickable="false"
@@ -101,7 +106,8 @@
             android:layout_column="1"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_read_high"
             android:layout_row="3"
@@ -113,7 +119,8 @@
             android:nextFocusDown="@+id/cal_ref_high"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_ref_high"
             android:layout_row="3"
@@ -143,7 +150,8 @@
             android:layout_column="1"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_read_low"
             android:layout_row="5"
@@ -155,7 +163,8 @@
             android:nextFocusDown="@+id/cal_ref_low"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_ref_low"
             android:layout_row="5"
@@ -193,7 +202,8 @@
             android:layout_gravity="center_horizontal"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_new_offset"
             android:layout_row="7"
@@ -206,7 +216,8 @@
             android:focusableInTouchMode="false"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_new_gain"
             android:layout_row="7"
@@ -219,7 +230,8 @@
             android:focusableInTouchMode="false"/>
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
+
             android:layout_height="wrap_content"
             android:id="@+id/cal_new_read"
             android:layout_row="7"

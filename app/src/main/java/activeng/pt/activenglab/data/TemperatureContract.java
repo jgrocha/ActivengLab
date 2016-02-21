@@ -47,6 +47,9 @@ public class TemperatureContract {
         public static final String COLUMN_DECIMALPLACES = "decimalplaces";
         public static final String COLUMN_CAL_A = "cal_a";
         public static final String COLUMN_CAL_B = "cal_b";
+        public static final String LAST_VALUE = "last_value";
+        public static final String LAST_READ = "last_read";
+
         // read_interval 1, 2, 5, 10, 20, 30, 60
         public static final String COLUMN_READ_INTERVAL = "read_interval";
         // each cycle, each 2 cycles, each 5 cycles, each 10 cycles, 20, 30, 60

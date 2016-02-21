@@ -26,8 +26,8 @@ import android.util.Log;
 public class TemperatureDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
-    //private static final int DATABASE_VERSION = 2;
+    //private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // 2016-02-20
     //private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "temperature.db";
@@ -74,6 +74,8 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
                 TemperatureContract.SensorEntry.COLUMN_CAL_B + " FLOAT DEFAULT 1 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL, " +
                 TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL, " +
+                TemperatureContract.SensorEntry.LAST_VALUE + " FLOAT, " +
+                TemperatureContract.SensorEntry.LAST_READ + " DATETIME, " +
                 "unique (" + TemperatureContract.SensorEntry.COLUMN_SENSORID + ", " +
                 TemperatureContract.SensorEntry.COLUMN_ADDRESS + ")" +
                 ");";
@@ -200,10 +202,11 @@ public class TemperatureDbHelper extends SQLiteOpenHelper {
         //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.TemperatureEntry.TABLE_NAME);
         //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TemperatureContract.CalibrationEntry.TABLE_NAME);
         //onCreate(sqLiteDatabase);
-        //if ((newVersion > oldVersion) && (oldVersion == 1)) {
-        //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_READ_INTERVAL + " INTEGER DEFAULT 2000 NOT NULL");
-        //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_RECORD_SAMPLE + " INTEGER DEFAULT 1 NOT NULL");
-        //}
+        if ((newVersion > oldVersion) && (oldVersion == 1)) {
+            Log.d("ActivEng", "Upgrade SQLite: " + oldVersion + " → " + newVersion);
+            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.LAST_VALUE + " FLOAT");
+            sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.LAST_READ + " DATETIME");
+        }
         //if ((newVersion > oldVersion) && (oldVersion == 2)) {
         //    sqLiteDatabase.execSQL("ALTER TABLE " + TemperatureContract.SensorEntry.TABLE_NAME + " ADD COLUMN " + TemperatureContract.SensorEntry.COLUMN_ADDRESS + " TEXT NOT NULL");
         //}
