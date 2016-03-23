@@ -9,12 +9,15 @@
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
+    <!--android:theme="@style/AppTheme">-->
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@android:style/Theme.Holo.Light">
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -26,6 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <service android:name="activeng.pt.activenglab.BluetoothLeService" android:enabled="true"/>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"

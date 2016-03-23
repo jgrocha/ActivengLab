@@ -212,7 +212,15 @@ dependencies {
         android:id="@+id/graph" />
 ```        
 
-### Bluetooth
+### Bluetooth (Novo BLE)
+
+http://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+
+Address: D0:39:72:C1:36:54 Name: BlunoV1.8
+
+
+
+### Bluetooth (to be deprecated...)
 
 Initial support:
 
@@ -374,6 +382,10 @@ novosValues.put(TemperatureContract.TemperatureEntry.COLUMN_CREATED, dateFormat.
 
 ```
 
+### Comunication android ←→ server in real time using socket.io
+
+http://socket.io/blog/native-socket-io-and-android/
+
 ## Android to Arduino protocol
 
 ### Arduino metadata
@@ -403,6 +415,95 @@ E       |
 P       | `P|On` ou `P|Off`
 W       | `W|Message not recognized`
 
-### Comunication android ←→ server in real time using socket.io
+## Arduino DHT11
 
-http://socket.io/blog/native-socket-io-and-android/
+Two possible libraries that works:
+
+### DHTlib (needs a small adjustment on the DHTLIB_TIMEOUT)
+
+```
+cd ~/Arduino/libraries
+svn export https://github.com/RobTillaart/Arduino.git/trunk/libraries/DHTlib
+```
+
+Edit `DHTlib/dht.h`
+
+```
+#ifndef F_CPU
+#define DHTLIB_TIMEOUT 10000  // ahould be approx. clock/40000
+#else
+#define DHTLIB_TIMEOUT (F_CPU/1600) // (F_CPU/40000)
+#endif
+```
+
+```
+DHT TEST PROGRAM 
+LIBRARY VERSION: 0.1.21
+
+Type,	status,	Humidity (%),	Temperature (C)
+16000000
+DHT11, 	OK,	47.0,	17.0
+DHT11, 	OK,	47.0,	17.0
+DHT11, 	OK,	47.0,	17.0
+DHT11, 	OK,	47.0,	17.0
+DHT11, 	OK,	47.0,	17.0
+```
+
+### DHT-sensor-library
+
+```
+DHTtester
+```
+
+```
+DHTxx test!
+Humidity: 47.00 %	Temperature: 17.00 *C 
+Humidity: 47.00 %	Temperature: 17.00 *C 
+Humidity: 47.00 %	Temperature: 17.00 *C 
+Humidity: 47.00 %	Temperature: 17.00 *C 
+Humidity: 47.00 %	Temperature: 17.00 *C 
+```
+
+### DHT-sensor-library + Adafruit_DHT_Unified
+
+```
+DHT_Unified_Sensor/DHT_Unified_Sensor.ino
+
+// Depends on the following Arduino libraries:
+// - Adafruit Unified Sensor Library: https://github.com/adafruit/Adafruit_Sensor
+// - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
+
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+```
+
+Output:
+
+```
+DHTxx Unified Sensor Example
+------------------------------------
+Temperature
+Sensor:       DHT11
+Driver Ver:   1
+Unique ID:    -1
+Max Value:    50.00 *C
+Min Value:    0.00 *C
+Resolution:   2.00 *C
+------------------------------------
+------------------------------------
+Humidity
+Sensor:       DHT11
+Driver Ver:   1
+Unique ID:    -1
+Max Value:    80.00%
+Min Value:    20.00%
+Resolution:   5.00%
+------------------------------------
+Temperature: 17.000000 *C
+Humidity: 45.00%
+Temperature: 17.000000 *C
+Humidity: 45.00%
+Temperature: 17.000000 *C
+Humidity: 46.00%
+```

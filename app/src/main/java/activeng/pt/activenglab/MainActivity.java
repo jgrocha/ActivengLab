@@ -2,9 +2,7 @@ package activeng.pt.activenglab;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -17,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -33,7 +30,8 @@ import java.util.Locale;
 
 import activeng.pt.activenglab.data.TemperatureContract;
 
-public class MainActivity extends AppCompatActivity {
+//public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BlunoLibrary {
 
     // Constants
     // The authority for the sync adapter's content provider
@@ -57,8 +55,11 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     private static BluetoothChatService mChatService = null;
 
-    private String deviceName;
-    private String deviceAddress;
+    //private String mDeviceName;
+    //private String mDeviceAddress;
+
+    private String mDeviceName;
+    private String mDeviceAddress;
 
     private BroadcastReceiver conn2BTService;
     private boolean registered = false;
@@ -70,12 +71,18 @@ public class MainActivity extends AppCompatActivity {
     private int numOfSensorsRegistered = 0;
     private long timeRequestTime = 0;
 
+    private MenuItem buttonScan;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // MainActivity onCreate running on thl 5000 thl/thl/THL:4.4.2/KOT49H/1419316124:user/test-keys
         Log.d("Life cyle", "MainActivity onCreate running on " + Build.PRODUCT + " " + Build.FINGERPRINT);
         setContentView(R.layout.activity_main);
+        // Bluno
+        onCreateProcess();														//onCreate Process by BlunoLibrary
+        serialBegin(115200);													//set the Uart Baudrate on BLE chip to 115200
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maintoolbar);
         setSupportActionBar(toolbar);
@@ -110,9 +117,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Life cyle", "NO, I am NOT an emulator");
         }
 
+        /*
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Log.d("ActivEng", String.format("Nome bluetooth do dispositivo Android: %s", mBluetoothAdapter.getName()));
+        */
 
         // BroadcastReceiver is the same for LocalBroadcast or global Broadcast
         conn2BTService = new BroadcastReceiver() {
@@ -175,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
             String[] parts = metadata.split("\\|", -1);
 
             int id = Integer.parseInt(parts[1]);
-            //deviceAddress
+            //mDeviceAddress
             String location = parts[2];
             long installdate = Long.parseLong(parts[3]);
             String sensortype = parts[4];
@@ -186,21 +195,21 @@ public class MainActivity extends AppCompatActivity {
             double cal_a = Double.parseDouble(parts[9]);
             double cal_b = Double.parseDouble(parts[10]);
 
-            Uri mNewUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(id, deviceAddress);
+            Uri mNewUri = TemperatureContract.SensorEntry.buildSensorIDAddressUri(id, mDeviceAddress);
             Cursor sensorCursor = getContentResolver().query(mNewUri, null, null, null, null);
             if (sensorCursor.moveToFirst()) {
-                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " already exists in database");
+                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + mDeviceAddress + " already exists in database");
                 // Compare existing data with data from Arduino
                 // Update fields if necessary
                 // TODO
             } else {
-                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + deviceAddress + " TODO!");
+                Log.d("ActivEng", "MainActivity: handleBtSensorMetadata: Sensor " + id + "@" + mDeviceAddress + " TODO!");
                 // Insert to local database the new sensor
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                 Date installedOn = new Date(installdate * 1000);
                 ContentValues novosValues = new ContentValues();
                 novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORID, id);
-                novosValues.put(TemperatureContract.SensorEntry.COLUMN_ADDRESS, deviceAddress);
+                novosValues.put(TemperatureContract.SensorEntry.COLUMN_ADDRESS, mDeviceAddress);
                 novosValues.put(TemperatureContract.SensorEntry.COLUMN_LOCATION, location);
                 novosValues.put(TemperatureContract.SensorEntry.COLUMN_INSTALLDATE, dateFormat.format(installedOn));
                 novosValues.put(TemperatureContract.SensorEntry.COLUMN_SENSORTYPE, sensortype);
@@ -259,6 +268,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
             //this.sendBroadcast(intent);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            serialSend(message + "\n");
+
         }
     }
 
@@ -278,9 +290,11 @@ public class MainActivity extends AppCompatActivity {
         // syncronize clocks
         String message = "M";
         Log.d("ActivEng", "Get metadata: " + message);
-        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        //this.sendBroadcast(intent);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        //Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        ////this.sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        serialSend(message + "\n");
     }
 
     public void syncronizeTime() {
@@ -289,9 +303,11 @@ public class MainActivity extends AppCompatActivity {
         timeRequestTime = requestTime;
         String message = "T|" + requestTime / 1000;
         Log.d("ActivEng", "Set time: " + message);
-        Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
-        //this.sendBroadcast(intent);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        //Intent intent = new Intent(Constants.MESSAGE_TO_ARDUINO).putExtra(Intent.EXTRA_TEXT, message);
+        ////this.sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        serialSend(message + "\n");
     }
 
     @Override
@@ -325,6 +341,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        MenuItem buttonScan = menu.findItem(R.id.buttonScan);
+
         return true;
     }
 
@@ -364,6 +383,12 @@ public class MainActivity extends AppCompatActivity {
                 toast.show();
                 Log.d("Life cyle", "Switch");
                 return true;
+            case R.id.buttonScan:
+                toast = Toast.makeText(getApplicationContext(), "Scanning...", Toast.LENGTH_SHORT);
+                toast.show();
+                buttonScanOnClickProcess();                                        //Alert Dialog for selecting the BLE device
+                Log.d("Life cyle", "Scan");
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -380,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();  // Always call the superclass method first
         Log.d("Life cyle", "MainActivity onStart");
 
+        /*
         // If BT is not on, request that it be enabled.
         // setupChat() will then be called during onActivityResult
         if (!mBluetoothAdapter.isEnabled()) {
@@ -412,6 +438,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        */
     }
 
     /*
@@ -484,6 +511,7 @@ public class MainActivity extends AppCompatActivity {
         mChatService = new BluetoothChatService(this);
     }
 
+    /*
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CONNECT_DEVICE_SECURE:
@@ -516,6 +544,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
         String address = data.getExtras()
@@ -523,12 +552,13 @@ public class MainActivity extends AppCompatActivity {
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
-        deviceName = device.getName();
-        deviceAddress = device.getAddress();
+        mDeviceName = device.getName();
+        mDeviceAddress = device.getAddress();
 
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
+    */
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -565,6 +595,7 @@ public class MainActivity extends AppCompatActivity {
         invalidateOptionsMenu();
         Log.d("Life cyle", "MainActivity onResume");
 
+        /*
         if (mChatService != null) {
             state = mChatService.getState();
             //public static final int STATE_NONE = 0;       // we're doing nothing
@@ -594,6 +625,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+        */
 
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_BT_FAIL));
@@ -602,6 +634,10 @@ public class MainActivity extends AppCompatActivity {
         manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_SENSORMETADATA));
         manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_CLOCK));
         registered = true;
+
+        // Bluno
+        onResumeProcess();														//onResume Process by BlunoLibrary
+
     }
 
     @Override
@@ -630,6 +666,53 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();  // Always call the superclass
         Log.d("Life cyle", "MainActivity onDestroy");
+    }
+
+    @Override
+    public void onConectionStateChange(connectionStateEnum theConnectionState, String deviceName, String deviceAddress) {//Once connection state changes, this function will be called
+        switch (theConnectionState) {											//Four connection state
+            case isConnected:
+                Log.d("Life cyle", "onConectionStateChange: isConnected");
+                if (this.buttonScan != null) {
+                    this.buttonScan.setTitle("isConnected");
+                }
+                mDeviceName = deviceName;
+                mDeviceAddress = deviceAddress;
+                getArduinoMetadata();
+                break;
+            case isConnecting:
+                Log.d("Life cyle", "onConectionStateChange: isConnecting");
+                if (this.buttonScan != null) {
+                    this.buttonScan.setTitle("isConnecting");
+                }
+                break;
+            case isToScan:
+                Log.d("Life cyle", "onConectionStateChange: isToScan");
+                if (this.buttonScan != null) {
+                    this.buttonScan.setTitle("isToScan");
+                }
+                break;
+            case isScanning:
+                Log.d("Life cyle", "onConectionStateChange: isScanning");
+                if (this.buttonScan != null) {
+                    this.buttonScan.setTitle("isScanning");
+                }
+                break;
+            case isDisconnecting:
+                Log.d("Life cyle", "onConectionStateChange: isDisconnecting");
+                if (this.buttonScan != null) {
+                    this.buttonScan.setTitle("isDisconnecting");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onSerialReceived(String theString) {							//Once connection data received, this function will be called
+        // TODO Auto-generated method stub
+        Log.d("ActivEng", "onSerialReceived" + theString);
     }
 
     /**

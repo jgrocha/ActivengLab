@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:background="@color/colorBackgroundMain"
               android:orientation="vertical">
 
     <GridLayout
@@ -14,9 +15,18 @@
         <TextView
             android:id="@+id/tvLocation"
             android:layout_width="wrap_content"
-            android:layout_columnSpan="3"
+            android:layout_columnSpan="2"
             android:layout_height="wrap_content"
             android:text="Carnaxide"/>
+
+        <ImageView
+            android:id="@+id/pic"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_audio_alarm"
+            android:layout_gravity="center_vertical">
+        </ImageView>
 
         <TextView
             android:id="@+id/tvSensorType"
