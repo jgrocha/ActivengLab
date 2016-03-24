@@ -27,8 +27,8 @@ public class ItemSensorCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Find fields to populate in inflated template
-        TextView tvID = (TextView) view.findViewById(R.id.tvID);
-        TextView tvAddress = (TextView) view.findViewById(R.id.tvAddress);
+        //TextView tvID = (TextView) view.findViewById(R.id.tvID);
+        //TextView tvAddress = (TextView) view.findViewById(R.id.tvAddress);
         TextView tvLocation = (TextView) view.findViewById(R.id.tvLocation);
         TextView tvSensorType = (TextView) view.findViewById(R.id.tvSensorType);
         // TODO
@@ -45,8 +45,8 @@ public class ItemSensorCursorAdapter extends CursorAdapter {
         String lastRead = cursor.getString(cursor.getColumnIndexOrThrow(TemperatureContract.SensorEntry.LAST_READ));
 
         // Populate fields with extracted properties
-        tvID.setText(String.valueOf(sensorId));
-        tvAddress.setText(sensorAddress);
+        //tvID.setText(String.valueOf(sensorId));
+        //tvAddress.setText(sensorAddress);
         tvLocation.setText(sensorLocation);
         tvSensorType.setText(sensorType);
         // TODO

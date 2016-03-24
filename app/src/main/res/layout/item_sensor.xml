@@ -8,7 +8,6 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_gravity="fill_horizontal"
         android:columnCount="3">
 
@@ -30,7 +29,6 @@
 
         <TextView
             android:id="@+id/tvSensorType"
-            android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:text="PT999"/>
 
@@ -40,7 +38,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Last value"/>
+            android:text="Last value"
+            android:layout_gravity="right"/>
 
         <TextView
             android:id="@+id/tvSensorLastValue"
@@ -50,36 +49,31 @@
             android:text="0.0"/>
 
         <!--android:gravity="bottom"-->
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
+        <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+                      <!--android:layout_width="wrap_content"-->
+                      <!--android:layout_height="wrap_content"-->
 
-                      android:layout_gravity="bottom"
-                      android:orientation="horizontal">
+                      <!--android:layout_gravity="bottom"-->
+                      <!--android:orientation="horizontal">-->
+
+            <!--<TextView-->
+                <!--android:id="@+id/tvID"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="9"/>-->
 
             <!--<TextView-->
                 <!--android:layout_width="wrap_content"-->
                 <!--android:layout_height="wrap_content"-->
-                <!--android:text="Sensor "/>-->
+                <!--android:text="\@"/>-->
 
-            <TextView
-                android:id="@+id/tvID"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="9"/>
+            <!--<TextView-->
+                <!--android:id="@+id/tvAddress"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="00:00:00:00:00:00"/>-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="\@"/>
-
-            <TextView
-                android:id="@+id/tvAddress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00:00:00:00:00"/>
-
-        </LinearLayout>
+        <!--</LinearLayout>-->
 
 
 

@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -109,7 +110,9 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 	public static final String SerialPortUUID="0000dfb1-0000-1000-8000-00805f9b34fb";
 	public static final String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
     public static final String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
-	
+
+	private BroadcastReceiver connectionUpdates;
+
     public void onCreateProcess()
     {
 		Log.d(TAG, "onCreateProcess → bind → mServiceConnection");
@@ -185,10 +188,21 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 				scanLeDevice(false);
 			}
 		}).create();
-		
+
+		connectionUpdates = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Bundle extras = intent.getExtras();
+				Log.d("ActivEng", "BlunoLibrary --> onReceive");
+				if (extras != null) {
+					String message = extras.getString(Intent.EXTRA_TEXT);
+					Log.d("ActivEng", message);
+					serialSend(message + "\n");
+				}
+			}
+		};
+
     }
-    
-    
     
     public void onResumeProcess() {
     	System.out.println("BlUNOActivity onResume");
