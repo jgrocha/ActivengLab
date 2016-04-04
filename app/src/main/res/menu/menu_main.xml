@@ -21,13 +21,14 @@
         android:id="@+id/buttonScan"
         android:orderInCategory="100"
         android:title="Scan"
-        app:showAsAction="never"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/myswitch"
         android:title=""
         app:showAsAction="always"
-        app:actionLayout="@layout/switch_layout"/>
+        app:actionLayout="@layout/switch_layout"
+        android:visible="false"/>
 
     <item
         android:id="@+id/action_sync_now"

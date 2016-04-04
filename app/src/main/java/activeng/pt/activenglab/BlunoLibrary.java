@@ -350,6 +350,7 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
             	else if (mSCharacteristic==mSerialPortCharacteristic) {
 					System.out.println("mGattUpdateReceiver->onReceive->Serial Port");
 					String readMessage = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+
 					queue.append(readMessage);
 					pos = queue.indexOf("\n");
 					while (pos >= 0) {
@@ -420,14 +421,14 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 			onConectionStateChange(mConnectionState, mDeviceName, mDeviceAddress);
 			scanLeDevice(true);
 			// JGR if we want to seed the dialog to select BLE device
-			mScanDeviceDialog.show();
+			//mScanDeviceDialog.show();
 			break;
 		case isToScan:
 			mConnectionState= connectionStateEnum.isScanning;
 			onConectionStateChange(mConnectionState, mDeviceName, mDeviceAddress);
 			scanLeDevice(true);
 			// JGR if we want to seed the dialog to select BLE device
-			mScanDeviceDialog.show();
+			//mScanDeviceDialog.show();
 			break;
 		case isScanning:
 			
@@ -514,9 +515,11 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 					System.out.println("mLeScanCallback onLeScan run →→→ Address: " + device.getAddress() + " Name: " + device.getName().toString());
 					// Connect immediately to the device...
 					// JGR
-					//if (device.getName().toString().equals("BlunoV1.8")) {
-					//	connectToDevice(device);
-					//}
+					if (device.getName().toString().equals("BlunoV1.8")) {
+						connectToDevice(device);
+						// se se mostrar o AlertDialog, fecha-se automaticamente o mesmo assim que apanharmos o Bluno
+						//mScanDeviceDialog.dismiss();
+					}
 					mLeDeviceListAdapter.addDevice(device);
 					mLeDeviceListAdapter.notifyDataSetChanged();
 				}

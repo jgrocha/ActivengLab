@@ -65,13 +65,15 @@ public class MainActivity extends BlunoLibrary {
     private boolean registered = false;
 
     private static Switch bt_switch = null;
+    private static Menu menu = null;
+    //private static MenuItem scanMenuItem = null;
     private static boolean bt_switch_listener_enabled = true;
 
     private int numOfSensorsConnected = 0;
     private int numOfSensorsRegistered = 0;
     private long timeRequestTime = 0;
 
-    private MenuItem buttonScan;
+    //private MenuItem buttonScan;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +84,6 @@ public class MainActivity extends BlunoLibrary {
         // Bluno
         onCreateProcess();														//onCreate Process by BlunoLibrary
         serialBegin(115200);													//set the Uart Baudrate on BLE chip to 115200
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maintoolbar);
         setSupportActionBar(toolbar);
@@ -282,6 +283,12 @@ public class MainActivity extends BlunoLibrary {
             btState = extras.getInt(Intent.EXTRA_TEXT);
             if (btState == Constants.STATE_CONNECTED) {
                 getArduinoMetadata();
+                // label do menuItem scanMenuItem
+                //scanMenuItem.setTitle("U2");
+
+                //MenuItem scanMenuItem = menu.findItem(R.id.button_scan);
+                //scanMenuItem.setTitle("CATROR");
+
             }
         }
     }
@@ -316,6 +323,8 @@ public class MainActivity extends BlunoLibrary {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         MenuItem menuItem = menu.findItem(R.id.myswitch);
+        //MenuItem scanMenuItem = menu.findItem(R.id.buttonScan);
+
         View view = MenuItemCompat.getActionView(menuItem);
         bt_switch = (Switch) view.findViewById(R.id.switchForActionBar);
 
@@ -342,8 +351,7 @@ public class MainActivity extends BlunoLibrary {
             }
         });
 
-        MenuItem buttonScan = menu.findItem(R.id.buttonScan);
-
+        this.menu = menu;
         return true;
     }
 
@@ -635,8 +643,11 @@ public class MainActivity extends BlunoLibrary {
         manager.registerReceiver(this.conn2BTService, new IntentFilter(Constants.MESSAGE_CLOCK));
         registered = true;
 
+        // JGR, initiate the BLE discover process, instead of clicking the button
+        buttonScanOnClickProcess();
+
         // Bluno
-        onResumeProcess();														//onResume Process by BlunoLibrary
+        onResumeProcess();													//onResume Process by BlunoLibrary
 
     }
 
@@ -670,11 +681,22 @@ public class MainActivity extends BlunoLibrary {
 
     @Override
     public void onConectionStateChange(connectionStateEnum theConnectionState, String deviceName, String deviceAddress) {//Once connection state changes, this function will be called
+        MenuItem scanMenuItem;
+        if (menu != null) {
+            scanMenuItem = menu.findItem(R.id.buttonScan);
+        } else {
+            scanMenuItem = null;
+        }
+        if (scanMenuItem != null) {
+            Log.d("Life cyle", scanMenuItem.getTitle().toString() );
+        } else {
+            Log.d("Life cyle", "scanMenuItem == null" );
+        }
         switch (theConnectionState) {											//Four connection state
             case isConnected:
                 Log.d("Life cyle", "onConectionStateChange: isConnected");
-                if (this.buttonScan != null) {
-                    this.buttonScan.setTitle("isConnected");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("CONNECTED");
                 }
                 mDeviceName = deviceName;
                 mDeviceAddress = deviceAddress;
@@ -682,29 +704,33 @@ public class MainActivity extends BlunoLibrary {
                 break;
             case isConnecting:
                 Log.d("Life cyle", "onConectionStateChange: isConnecting");
-                if (this.buttonScan != null) {
-                    this.buttonScan.setTitle("isConnecting");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("CONNECTING");
                 }
                 break;
             case isToScan:
                 Log.d("Life cyle", "onConectionStateChange: isToScan");
-                if (this.buttonScan != null) {
-                    this.buttonScan.setTitle("isToScan");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("SCAN");
                 }
                 break;
             case isScanning:
                 Log.d("Life cyle", "onConectionStateChange: isScanning");
-                if (this.buttonScan != null) {
-                    this.buttonScan.setTitle("isScanning");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("SCANNING");
                 }
                 break;
             case isDisconnecting:
                 Log.d("Life cyle", "onConectionStateChange: isDisconnecting");
-                if (this.buttonScan != null) {
-                    this.buttonScan.setTitle("isDisconnecting");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("DISCONNECTING");
                 }
                 break;
             default:
+                Log.d("Life cyle", "onConectionStateChange: UNKNOWN!");
+                if (scanMenuItem != null) {
+                    scanMenuItem.setTitle("--?--");
+                }
                 break;
         }
     }

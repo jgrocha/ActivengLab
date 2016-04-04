@@ -182,8 +182,11 @@ public class CalibrationActivityFragment extends Fragment implements OnClickList
             //cal_a = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_A);
             //cal_b = currentSensor.getAsDouble(TemperatureContract.SensorEntry.COLUMN_CAL_B);
 
-            cal_b_new = cal_b * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
-            cal_a_new = cal_read_low - (cal_ref_low - cal_a) * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
+            //cal_b_new = cal_b * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
+            //cal_a_new = cal_read_low - (cal_ref_low - cal_a) * (cal_read_high - cal_read_low) / (cal_ref_high - cal_ref_low);
+
+            cal_b_new = cal_b * (cal_ref_high - cal_ref_low) / (cal_read_high - cal_read_low);
+            cal_a_new = cal_read_low - (cal_ref_low - cal_a) * (cal_ref_high - cal_ref_low) / (cal_read_high - cal_read_low);
 
             ((EditText) rootView.findViewById(R.id.cal_new_offset)).setText(UtilitySingleton.getInstance().formatTemperature(cal_a_new, 6));
             ((EditText) rootView.findViewById(R.id.cal_new_gain)).setText(UtilitySingleton.getInstance().formatTemperature(cal_b_new, 6));
