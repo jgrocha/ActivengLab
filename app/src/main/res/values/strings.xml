@@ -62,7 +62,7 @@
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <string name="pref_remote_url">Remote URL</string>
-    <string name="pref_default_remote_url">http://192.168.1.94:3000/direct</string>
+    <string name="pref_default_remote_url">http://labs.activeng.pt/direct</string>
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>

@@ -25,6 +25,7 @@ public class DetailActivity extends AppCompatActivity {
 
     static final String STATE_SENSOR = "Sensor";
     private long sensorId = 0;
+    private Double lastRead;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,9 @@ public class DetailActivity extends AppCompatActivity {
             Intent intent = getIntent();
             if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID)) {
                 sensorId = intent.getLongExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID, 0);
+            }
+            if (intent != null && intent.hasExtra(TemperatureContract.SensorEntry.LAST_VALUE)) {
+                lastRead = intent.getDoubleExtra(TemperatureContract.SensorEntry.LAST_VALUE, 0.0);
             }
         }
 

@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -205,7 +206,7 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
     }
     
     public void onResumeProcess() {
-    	System.out.println("BlUNOActivity onResume");
+		Log.d("Life cyle", "BLUNO onResumeProcess");
 		// Ensures Bluetooth is enabled on the device. If Bluetooth is not
 		// currently enabled,
 		// fire an intent to display a dialog asking the user to grant
@@ -402,7 +403,7 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 				}
             	
             
-            	System.out.println("displayData "+intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            	//System.out.println("displayData "+intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             	
 //            	mPlainProtocol.mReceivedframe.append(intent.getStringExtra(BluetoothLeService.EXTRA_DATA)) ;
 //            	System.out.print("mPlainProtocol.mReceivedframe:");
@@ -412,10 +413,35 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
             }
         }
     };
-	
-    void buttonScanOnClickProcess()
-    {
-    	switch (mConnectionState) {
+
+	void connectionState() {
+		switch (mConnectionState) {
+			case isNull:
+				Log.d("Life cyle", "→ isNull");
+				break;
+			case isToScan:
+				Log.d("Life cyle", "→ isToScan");
+				break;
+			case isScanning:
+				Log.d("Life cyle", "→ isScanning");
+				break;
+			case isConnecting:
+				Log.d("Life cyle", "→ isConnecting");
+				break;
+			case isConnected:
+				Log.d("Life cyle", "→ isConnected");
+				break;
+			case isDisconnecting:
+				Log.d("Life cyle", "→ isDisconnecting");
+				break;
+			default:
+				Log.d("Life cyle", "→ mConnectionState unkown");
+				break;
+		}
+	}
+
+    void buttonScanOnClickProcess() {
+		switch (mConnectionState) {
 		case isNull:
 			mConnectionState= connectionStateEnum.isScanning;
 			onConectionStateChange(mConnectionState, mDeviceName, mDeviceAddress);
@@ -431,29 +457,21 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 			//mScanDeviceDialog.show();
 			break;
 		case isScanning:
-			
 			break;
-
 		case isConnecting:
-			
 			break;
 		case isConnected:
 			mBluetoothLeService.disconnect();
             mHandler.postDelayed(mDisonnectingOverTimeRunnable, 10000);
-
 //			mBluetoothLeService.close();
 			mConnectionState= connectionStateEnum.isDisconnecting;
 			onConectionStateChange(mConnectionState, mDeviceName, mDeviceAddress);
 			break;
 		case isDisconnecting:
-			
 			break;
-
 		default:
 			break;
 		}
-    	
-    	
     }
     
 	void scanLeDevice(final boolean enable) {
@@ -512,16 +530,23 @@ public abstract  class BlunoLibrary  extends AppCompatActivity {
 				@Override
 				public void run() {
 					// JGR
-					System.out.println("mLeScanCallback onLeScan run →→→ Address: " + device.getAddress() + " Name: " + device.getName().toString());
-					// Connect immediately to the device...
-					// JGR
-					if (device.getName().toString().equals("BlunoV1.8")) {
-						connectToDevice(device);
-						// se se mostrar o AlertDialog, fecha-se automaticamente o mesmo assim que apanharmos o Bluno
-						//mScanDeviceDialog.dismiss();
+					if (device != null ) {
+						System.out.println("mLeScanCallback onLeScan run →→→ Address: " + device.getAddress());
+						//System.out.println("mLeScanCallback onLeScan run →→→ Name: " + device.getName().toString());
+						System.out.println("mLeScanCallback onLeScan run →→→ Name: " + device.getName());
+						// Connect immediately to the device...
+						// JGR
+						//if (device.getName().toString().equals("BlunoV1.8")) {
+						if (device.getName() != null) {
+							if (device.getName().equals("BlunoV1.8")) {
+								connectToDevice(device);
+								// se se mostrar o AlertDialog, fecha-se automaticamente o mesmo assim que apanharmos o Bluno
+								//mScanDeviceDialog.dismiss();
+							}
+						}
+						mLeDeviceListAdapter.addDevice(device);
+						mLeDeviceListAdapter.notifyDataSetChanged();
 					}
-					mLeDeviceListAdapter.addDevice(device);
-					mLeDeviceListAdapter.notifyDataSetChanged();
 				}
 			});
 		}

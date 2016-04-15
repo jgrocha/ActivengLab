@@ -65,8 +65,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 if (cursor != null) {
                     //long _ID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry._ID));
                     long _SENSORID = cursor.getLong(cursor.getColumnIndex(TemperatureContract.SensorEntry.COLUMN_SENSORID));
+                    Double lastRead = cursor.getDouble(cursor.getColumnIndex(TemperatureContract.SensorEntry.LAST_VALUE));
+
                     Intent intent = new Intent(getActivity(), DetailActivity.class);
                     intent.putExtra(TemperatureContract.SensorEntry.COLUMN_SENSORID, _SENSORID);
+                    intent.putExtra(TemperatureContract.SensorEntry.LAST_VALUE, lastRead);
                     startActivity(intent);
                 }
             }

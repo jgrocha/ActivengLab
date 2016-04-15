@@ -600,8 +600,10 @@ public class MainActivity extends BlunoLibrary {
     public void onResume() {
         int state;
         super.onResume();  // Always call the superclass method first
-        invalidateOptionsMenu();
+
+        //invalidateOptionsMenu();
         Log.d("Life cyle", "MainActivity onResume");
+        connectionState();
 
         /*
         if (mChatService != null) {
@@ -644,11 +646,11 @@ public class MainActivity extends BlunoLibrary {
         registered = true;
 
         // JGR, initiate the BLE discover process, instead of clicking the button
-        buttonScanOnClickProcess();
-
-        // Bluno
-        onResumeProcess();													//onResume Process by BlunoLibrary
-
+        if (mConnectionState != connectionStateEnum.isConnected) {
+            buttonScanOnClickProcess();
+            // Bluno //onResume Process by BlunoLibrary
+            onResumeProcess();
+        }
     }
 
     @Override
